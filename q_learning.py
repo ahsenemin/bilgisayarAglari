@@ -1,10 +1,11 @@
-
 import pandas as pd
 import numpy as np
 import networkx as nx
 from collections import defaultdict
 import random
 import os
+
+import ag as ag  # <-- Ağ (Graph) buradan geliyor (ag.py değişmedi!)
 
 # =========================================================
 # 0) AĞIRLIKLAR (Weighted Sum Method) - DÜZENLENEBİLİR ALAN
@@ -15,7 +16,11 @@ def normalize_weights(w_delay, w_rel, w_bw):
     s = float(w_delay) + float(w_rel) + float(w_bw)
     if s <= 0:
         raise ValueError("Ağırlıkların toplamı 0 veya negatif olamaz.")
-    return {"w_delay": float(w_delay)/s, "w_rel": float(w_rel)/s, "w_bw": float(w_bw)/s}
+    return {
+        "w_delay": float(w_delay) / s,
+        "w_rel":   float(w_rel)   / s,
+        "w_bw":    float(w_bw)    / s
+    }
 
 # ----- Yardımcı: güvenli dönüştürücüler (virgüllü ondalıklar için) -----
 def safe_float(x):
@@ -29,31 +34,20 @@ def safe_int(x):
     return int(x)
 
 # =========================================================
-# 1) VERİYİ OKU (Node + Edge)
+# 1) AĞI ag.py İÇİNDEN AL
+#    (ag.py SENİN 1. KODUN, DEĞİŞTİRMİYORUZ)
 # =========================================================
-NODES_CSV = "BSM307_317_Guz2025_TermProject_NodeData.csv"
-EDGES_CSV = "BSM307_317_Guz2025_TermProject_EdgeData.csv"
+G = ag.G  # NetworkX Graph
 
-nodes_df = pd.read_csv(NODES_CSV, sep=';', decimal=',')   # node_id;s_ms;r_node
-edges_df = pd.read_csv(EDGES_CSV, sep=';', decimal=',')   # src;dst;capacity_mbps;delay_ms;r_link
-
-nodes_df['node_id'] = nodes_df['node_id'].apply(safe_int)
-nodes_df['s_ms']    = nodes_df['s_ms'].apply(safe_float)
-nodes_df['r_node']  = nodes_df['r_node'].apply(safe_float)
-
-edges_df['src']            = edges_df['src'].apply(safe_int)
-edges_df['dst']            = edges_df['dst'].apply(safe_int)
-edges_df['capacity_mbps']  = edges_df['capacity_mbps'].apply(safe_float)
-edges_df['delay_ms']       = edges_df['delay_ms'].apply(safe_float)
-edges_df['r_link']         = edges_df['r_link'].apply(safe_float)
+# Komşuluk listesi (Q-learning için)
+neighbors = {n: list(G.neighbors(n)) for n in G.nodes()}
 
 # =========================================================
 # 2) DEMAND VERİSİNİ OKU (Opsiyonel)
 # =========================================================
-# Eğer demand dosyan yoksa hiç sorun değil: manuel girebilirsin.
-DEMAND_CSV = "BSM307_317_Guz2025_TermProject_DemandData.csv"  # örnek isim; yoksa dosyayı oluşturma zorunlu değil
-
+DEMAND_CSV = "BSM307_317_Guz2025_TermProject_DemandData.csv"  # varsa okunur, yoksa manuel
 demand_df = None
+
 if os.path.exists(DEMAND_CSV):
     demand_df = pd.read_csv(DEMAND_CSV, sep=';', decimal=',')  # src;dst;demand_mbps
     demand_df['src'] = demand_df['src'].apply(safe_int)
@@ -61,47 +55,32 @@ if os.path.exists(DEMAND_CSV):
     demand_df['demand_mbps'] = demand_df['demand_mbps'].apply(safe_float)
 
 # =========================================================
-# 3) NetworkX grafiği oluştur
+# 3) ÖDÜL (Reward) - Demand'li Hard Constraint
+#    NOT: Attribute isimleri ag.py'deki isimlere göre uyarlanmıştır:
+#    Node: processing_delay, reliability
+#    Edge: bandwidth, delay, reliability
 # =========================================================
-G = nx.Graph()
-
-for _, row in nodes_df.iterrows():
-    G.add_node(int(row['node_id']), s_ms=float(row['s_ms']), r_node=float(row['r_node']))
-
-for _, row in edges_df.iterrows():
-    u, v = int(row['src']), int(row['dst'])
-    G.add_edge(u, v,
-               capacity_mbps=float(row['capacity_mbps']),
-               delay_ms=float(row['delay_ms']),
-               r_link=float(row['r_link']))
-
-neighbors = {n: list(G.neighbors(n)) for n in G.nodes()}
-
-# =========================================================
-# 4) ÖDÜL (Reward) - Demand'li Hard Constraint
-# =========================================================
-# Demand'i karşılamayan adımı "geçersiz" saymak için büyük ceza.
-INVALID_ACTION_PENALTY = 1e6  # büyük sayı -> reward = -1e6
+INVALID_ACTION_PENALTY = 1e6  # büyük ceza -> reward = -1e6
 
 def reward_multi_with_demand(s, a, s_next, G, weights, demand_mbps=None):
     """
     Multi-objective cost:
-      cost = w_delay*delay + w_rel*(1-rel) + w_bw*(100/capacity)
+      cost = w_delay*delay + w_rel*(1-rel) + w_bw*(100/bandwidth)
     Hard constraint:
-      eğer demand_mbps varsa ve edge capacity < demand -> aşırı ceza
+      eğer demand_mbps varsa ve edge bandwidth < demand -> aşırı ceza
     """
     edge = G.edges[s, s_next]
     node_next = G.nodes[s_next]
 
     # HARD CONSTRAINT (Demand)
     if demand_mbps is not None:
-        if edge['capacity_mbps'] < demand_mbps:
+        if float(edge['bandwidth']) < float(demand_mbps):
             return -INVALID_ACTION_PENALTY
 
-    delay = edge['delay_ms'] + node_next['s_ms']  # ms
-    rel = edge['r_link'] * node_next['r_node']
+    delay = float(edge['delay']) + float(node_next['processing_delay'])  # ms
+    rel = float(edge['reliability']) * float(node_next['reliability'])
     unreliab = 1.0 - rel
-    inv_bw = 100.0 / max(1.0, edge['capacity_mbps'])
+    inv_bw = 100.0 / max(1.0, float(edge['bandwidth']))
 
     cost = (weights["w_delay"] * delay +
             weights["w_rel"]   * unreliab +
@@ -129,7 +108,7 @@ def step(state, action, goal_node, G, reward_fn, fail_with_reliability=False):
     if fail_with_reliability:
         edge = G.edges[state, s_next]
         node_next = G.nodes[s_next]
-        success_p = edge['r_link'] * node_next['r_node']
+        success_p = float(edge['reliability']) * float(node_next['reliability'])
         if random.random() > success_p:
             return state, -100.0, True
 
@@ -155,9 +134,9 @@ def q_learning(
     epsilon = epsilon_start
     eps_decay = (epsilon_start - epsilon_end) / max(1, epsilon_decay_steps)
 
-    for ep in range(episodes):
+    for _ in range(episodes):
         s = start_node
-        for t in range(max_steps_per_episode):
+        for _t in range(max_steps_per_episode):
             if len(neighbors.get(s, [])) == 0:
                 break
 
@@ -183,21 +162,26 @@ def greedy_path(Q, neighbors, start, goal, max_len=200):
     path = [start]
     s = start
     visited = set([start])
+
     for _ in range(max_len):
         if s == goal:
             break
         if len(neighbors.get(s, [])) == 0:
             break
+
         actions = neighbors[s]
         q_vals = [Q[(s, a)] for a in actions]
         max_q = max(q_vals)
         best_actions = [a for a, q in zip(actions, q_vals) if q == max_q]
+
         a = random.choice(best_actions)
         s = a
         path.append(s)
+
         if s in visited and s != goal:
             break
         visited.add(s)
+
     return path
 
 def path_metrics(path, G):
@@ -209,9 +193,10 @@ def path_metrics(path, G):
         u, v = path[i], path[i + 1]
         e = G.edges[u, v]
         n = G.nodes[v]
-        total_delay += e['delay_ms'] + n['s_ms']
-        total_rel   *= e['r_link'] * n['r_node']
-        bottleneck_bw = min(bottleneck_bw, e['capacity_mbps'])
+
+        total_delay += float(e['delay']) + float(n['processing_delay'])
+        total_rel   *= float(e['reliability']) * float(n['reliability'])
+        bottleneck_bw = min(bottleneck_bw, float(e['bandwidth']))
 
     return total_delay, total_rel, bottleneck_bw
 
@@ -225,83 +210,83 @@ def multi_cost(delay_ms, rel, bottleneck_bw, weights):
 def demand_feasible(path, G, demand_mbps):
     if demand_mbps is None:
         return True
-    # bottleneck >= demand
     _, _, bottleneck = path_metrics(path, G)
     return bottleneck >= demand_mbps
 
 # =========================================================
-# 5) KULLANICIDAN: (src,dst,demand) + ağırlıklar
+# 4) MAIN (ÇALIŞTIRILINCA AKAN KISIM)
 # =========================================================
-print("\n--- Kaynak/ Hedef seçimi ---")
-if demand_df is not None and len(demand_df) > 0:
-    print(f"Demand dosyası bulundu: {DEMAND_CSV} (satır sayısı: {len(demand_df)})")
-    use_from_file = input("Demand içinden bir satır seçmek ister misin? (E/H) [E]: ").strip().lower()
-    if use_from_file in ("", "e", "evet", "y", "yes"):
-        idx_in = input(f"Satır index gir (0..{len(demand_df)-1}) [0]: ").strip()
-        idx = int(idx_in) if idx_in else 0
-        idx = max(0, min(idx, len(demand_df)-1))
-        row = demand_df.iloc[idx]
-        start_node = int(row["src"])
-        goal_node  = int(row["dst"])
-        demand_mbps = float(row["demand_mbps"])
-        print(f"Seçilen demand: src={start_node}, dst={goal_node}, demand={demand_mbps} Mbps")
+def main():
+    print("\n--- Kaynak/ Hedef seçimi ---")
+    if demand_df is not None and len(demand_df) > 0:
+        print(f"Demand dosyası bulundu: {DEMAND_CSV} (satır sayısı: {len(demand_df)})")
+        use_from_file = input("Demand içinden bir satır seçmek ister misin? (E/H) [E]: ").strip().lower()
+        if use_from_file in ("", "e", "evet", "y", "yes"):
+            idx_in = input(f"Satır index gir (0..{len(demand_df)-1}) [0]: ").strip()
+            idx = int(idx_in) if idx_in else 0
+            idx = max(0, min(idx, len(demand_df) - 1))
+            row = demand_df.iloc[idx]
+            start_node = int(row["src"])
+            goal_node  = int(row["dst"])
+            demand_mbps = float(row["demand_mbps"])
+            print(f"Seçilen demand: src={start_node}, dst={goal_node}, demand={demand_mbps} Mbps")
+        else:
+            start_node = int(input("Başlangıç düğümü: "))
+            goal_node  = int(input("Hedef düğümü: "))
+            d_in = input("Demand (Mbps) [boş=kapasite kısıtı yok]: ").strip()
+            demand_mbps = safe_float(d_in) if d_in else None
     else:
         start_node = int(input("Başlangıç düğümü: "))
         goal_node  = int(input("Hedef düğümü: "))
         d_in = input("Demand (Mbps) [boş=kapasite kısıtı yok]: ").strip()
         demand_mbps = safe_float(d_in) if d_in else None
-else:
-    start_node = int(input("Başlangıç düğümü: "))
-    goal_node  = int(input("Hedef düğümü: "))
-    d_in = input("Demand (Mbps) [boş=kapasite kısıtı yok]: ").strip()
-    demand_mbps = safe_float(d_in) if d_in else None
 
-print("\n--- Ağırlıklar (W) ---")
-print("W_delay, W_rel, W_bw gir. (2-1-1 gibi girersen ben normalize ederim -> toplam=1)")
-w_delay_in = input("W_delay (gecikme) [varsayılan 1.0]: ").strip()
-w_rel_in   = input("W_rel (güvenirlik) [varsayılan 1.0]: ").strip()
-w_bw_in    = input("W_bw (kapasite) [varsayılan 1.0]: ").strip()
+    print("\n--- Ağırlıklar (W) ---")
+    print("W_delay, W_rel, W_bw gir. (2-1-1 gibi girersen ben normalize ederim -> toplam=1)")
+    w_delay_in = input("W_delay (gecikme) [varsayılan 1.0]: ").strip()
+    w_rel_in   = input("W_rel (güvenirlik) [varsayılan 1.0]: ").strip()
+    w_bw_in    = input("W_bw (kapasite) [varsayılan 1.0]: ").strip()
 
-w_delay = safe_float(w_delay_in) if w_delay_in else DEFAULT_WEIGHTS["w_delay"]
-w_rel   = safe_float(w_rel_in)   if w_rel_in   else DEFAULT_WEIGHTS["w_rel"]
-w_bw    = safe_float(w_bw_in)    if w_bw_in    else DEFAULT_WEIGHTS["w_bw"]
+    w_delay = safe_float(w_delay_in) if w_delay_in else DEFAULT_WEIGHTS["w_delay"]
+    w_rel   = safe_float(w_rel_in)   if w_rel_in   else DEFAULT_WEIGHTS["w_rel"]
+    w_bw    = safe_float(w_bw_in)    if w_bw_in    else DEFAULT_WEIGHTS["w_bw"]
 
-weights = normalize_weights(w_delay, w_rel, w_bw)
-print(f"\nNormalize edilmiş ağırlıklar: {weights} (toplam=1)")
+    weights = normalize_weights(w_delay, w_rel, w_bw)
+    print(f"\nNormalize edilmiş ağırlıklar: {weights} (toplam=1)")
 
-if demand_mbps is None:
-    print("Demand kısıtı: YOK (kapasite sadece maliyette kullanılacak)")
-else:
-    print(f"Demand kısıtı: VAR -> Her adımda capacity >= {demand_mbps} Mbps olmalı (hard constraint)")
-
-# Demand'li reward fonksiyonu
-reward_fn = make_reward_fn(weights, demand_mbps=demand_mbps)
-
-Q = q_learning(
-    G, neighbors,
-    start_node=start_node, goal_node=goal_node,
-    reward_fn=reward_fn,
-    episodes=6000, alpha=0.15, gamma=0.97,
-    epsilon_start=1.0, epsilon_end=0.05, epsilon_decay_steps=4000,
-    max_steps_per_episode=200,
-    stochastic_fail=False
-)
-
-best_path = greedy_path(Q, neighbors, start_node, goal_node)
-print("\nQ-learning ile bulunan greedy yol:", best_path)
-
-# yol metrikleri
-d, r, bw = path_metrics(best_path, G)
-tcost = multi_cost(d, r, bw, weights)
-
-print(f"\nDelay(ms)={d:.3f} | Reliability={r:.6f} | BottleneckBW(Mbps)={bw:.1f}")
-print(f"Multi-objective cost = {tcost:.6f}")
-
-# Demand uygunluk kontrolü
-if demand_mbps is not None:
-    ok = demand_feasible(best_path, G, demand_mbps)
-    if ok:
-        print(f"✅ Demand uygun: bottleneck {bw:.1f} >= demand {demand_mbps:.1f} Mbps")
+    if demand_mbps is None:
+        print("Demand kısıtı: YOK (bandwidth sadece maliyette kullanılacak)")
     else:
-        print(f"❌ Demand uygun değil: bottleneck {bw:.1f} < demand {demand_mbps:.1f} Mbps")
-        print("   (Bu durumda ya graph'ta uygun yol yok, ya eğitim/parametreleri artırmak gerekir.)")
+        print(f"Demand kısıtı: VAR -> Her adımda bandwidth >= {demand_mbps} Mbps olmalı (hard constraint)")
+
+    reward_fn = make_reward_fn(weights, demand_mbps=demand_mbps)
+
+    Q = q_learning(
+        G, neighbors,
+        start_node=start_node, goal_node=goal_node,
+        reward_fn=reward_fn,
+        episodes=6000, alpha=0.15, gamma=0.97,
+        epsilon_start=1.0, epsilon_end=0.05, epsilon_decay_steps=4000,
+        max_steps_per_episode=200,
+        stochastic_fail=False
+    )
+
+    best_path = greedy_path(Q, neighbors, start_node, goal_node)
+    print("\nQ-learning ile bulunan greedy yol:", best_path)
+
+    d, r, bw = path_metrics(best_path, G)
+    tcost = multi_cost(d, r, bw, weights)
+
+    print(f"\nDelay(ms)={d:.3f} | Reliability={r:.6f} | BottleneckBW(Mbps)={bw:.1f}")
+    print(f"Multi-objective cost = {tcost:.6f}")
+
+    if demand_mbps is not None:
+        ok = demand_feasible(best_path, G, demand_mbps)
+        if ok:
+            print(f"✅ Demand uygun: bottleneck {bw:.1f} >= demand {demand_mbps:.1f} Mbps")
+        else:
+            print(f"❌ Demand uygun değil: bottleneck {bw:.1f} < demand {demand_mbps:.1f} Mbps")
+            print("   (Bu durumda ya graph'ta uygun yol yok, ya eğitim/parametreleri artırmak gerekir.)")
+
+if __name__ == "__main__":
+    main()
