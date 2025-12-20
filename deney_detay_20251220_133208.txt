@@ -1,0 +1,15 @@
+Deney Tarihi: 20251220_133208
+Kullanılan ağırlıklar (normalize): [0.4, 0.4, 0.2]
+Algoritmalar: ga | Demand kayıt sayısı: 1 | Tekrar sayısı: 1
+
+=== Deney 01: S=8, D=44, B=200.00 Mbps ===
+
+[Genetik Algoritma] Başarı: 1/1 | Avg Cost: 6.9891
+   Süre (sn) -> Ortalama: 0.0182, En iyi: 0.0182, En kötü: 0.0182
+   Maliyet -> Ortalama: 6.9891, Std: 0.0000, En iyi: 6.9891, En kötü: 6.9891
+   En iyi rota: [8, 90]
+   Başarısız deneme yok.
+      -> Tekrar 1: Delay=10.00 ms | Rel=0.93308 | Bottleneck=915.00 Mbps | Maliyet=6.9891
+
+=== Genel Başarı Özeti ===
+GA: 1/1 kombinasyonda en az bir geçerli rota bulundu.
