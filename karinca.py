@@ -6,34 +6,13 @@ import math
 import time
 import statistics
 
+import ag as ag # Önceki kodu ag.py dosyasına taşıdık ve buradan import ediyoruz
+
 # ==========================================
 # 1. VERİ YÜKLEME VE GRAFİK
 # ==========================================
-def create_network_graph():
-    print("\nℹ️  Veri dosyaları kontrol ediliyor...", end=" ")
-    try:
-        nodes_df = pd.read_csv('BSM307_317_Guz2025_TermProject_NodeData.csv', sep=';', decimal=',')
-        edges_df = pd.read_csv('BSM307_317_Guz2025_TermProject_EdgeData.csv', sep=';', decimal=',')
-    except FileNotFoundError:
-        print("\n❌ HATA: CSV dosyaları bulunamadı!")
-        return None
 
-    G = nx.Graph()
 
-    for _, row in nodes_df.iterrows():
-        G.add_node(int(row['node_id']), 
-                   processing_delay=float(row['s_ms']), 
-                   reliability=float(row['r_node']))
-
-    for _, row in edges_df.iterrows():
-        G.add_edge(int(row['src']), int(row['dst']), 
-                   bandwidth=float(row['capacity_mbps']), 
-                   delay=float(row['delay_ms']), 
-                   reliability=float(row['r_link']))
-    
-    print("Tamamlandı.")
-    print(f"✅ Ağ Yüklendi: {G.number_of_nodes()} Düğüm, {G.number_of_edges()} Bağlantı.\n")
-    return G
 
 # ==========================================
 # 2. MALİYET HESAPLAMA
@@ -178,36 +157,6 @@ class ACORouting:
 # ==========================================
 # 4. GÖRSELLEŞTİRME VE ÇIKTI YÖNETİMİ
 # ==========================================
-def draw_results(G, path, s_node, d_node, score, history):
-    print("🎨 Grafik çiziliyor, lütfen bekleyin...")
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
-
-    # SOL: Ağ Haritası
-    pos = nx.spring_layout(G, seed=42)
-    nx.draw_networkx_nodes(G, pos, ax=ax1, node_size=20, node_color='#dddddd')
-    nx.draw_networkx_edges(G, pos, ax=ax1, alpha=0.1, edge_color='#999999')
-    
-    if path:
-        path_edges = list(zip(path, path[1:]))
-        nx.draw_networkx_nodes(G, pos, ax=ax1, nodelist=path, node_size=60, node_color='orange')
-        nx.draw_networkx_edges(G, pos, ax=ax1, edgelist=path_edges, edge_color='red', width=2.5)
-        
-    nx.draw_networkx_nodes(G, pos, ax=ax1, nodelist=[s_node], node_size=150, node_color='green', label="Başlangıç")
-    nx.draw_networkx_nodes(G, pos, ax=ax1, nodelist=[d_node], node_size=150, node_color='blue', label="Bitiş")
-    
-    ax1.set_title(f"ACO Rota: {s_node} -> {d_node}\n(Maliyet: {score:.4f})")
-    ax1.legend()
-    ax1.axis('off')
-
-    # SAĞ: Yakınsama Grafiği
-    ax2.plot(history, color='red', linewidth=2)
-    ax2.set_title("Algoritma Yakınsama (Convergence)")
-    ax2.set_xlabel("İterasyon Sayısı")
-    ax2.set_ylabel("En İyi Maliyet (Cost)")
-    ax2.grid(True, linestyle='--', alpha=0.7)
-
-    plt.tight_layout()
-    plt.show()
 
 def run_application(G):
     print("-" * 40)
@@ -309,7 +258,6 @@ def run_application(G):
             print(f"   • En İyi (Best)    : {best_res:.4f}")
             print(f"   • En Kötü (Worst)  : {worst_res:.4f}")
         
-        draw_results(G, best_overall_path, s_node, d_node, best_overall_score, best_overall_history)
         
     else:
         print("❌ HATA: Uygun bir yol bulunamadı.")
@@ -317,6 +265,6 @@ def run_application(G):
         print("=" * 60)
 
 if __name__ == "__main__":
-    G = create_network_graph()
+    G = ag.G
     if G:
         run_application(G)
