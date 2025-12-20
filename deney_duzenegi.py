@@ -1,5 +1,6 @@
 import argparse
 import math
+import random
 import statistics
 import time
 from dataclasses import dataclass, field
@@ -343,7 +344,11 @@ def main():
     parser.add_argument("--ql-epsilon-start", type=float, default=1.0, help="Q-learning başlangıç epsilon değeri.")
     parser.add_argument("--ql-epsilon-end", type=float, default=0.05, help="Q-learning minimum epsilon değeri.")
     parser.add_argument("--ql-epsilon-decay", type=int, default=2000, help="Q-learning epsilon azalma adım sayısı.")
+    parser.add_argument("--seed", type=int, default=None, help="Rastgele algoritmalar için tekrar üretilebilir seed.")
     args = parser.parse_args()
+
+    if args.seed is not None:
+        random.seed(args.seed)
 
     weights = normalize_weight_list(args.weights)
     combos = load_demands(args.demand_file, args.demands, args.demand_offset)
