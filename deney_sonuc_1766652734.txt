@@ -1,0 +1,28 @@
+DENEY RAPORU - 2025-12-25 11:51:34.021859
+Ağırlıklar (Gecikme/Güv/Kaynak): [0.4, 0.3, 0.3]
+--------------------------------------------------
+
+TALEP #1: S=8 -> D=44 (İstenen BW: 200.0 Mbps)
+  [Genetik Algoritma (GA)] Başarı: 3/3 | Ort. Maliyet: 3.28 | Ort. Süre: 0.1206s
+  [Karınca Kolonisi (ACO)] Başarı: 3/3 | Ort. Maliyet: 10.28 | Ort. Süre: 2.0505s
+  [Q-Öğrenme (RL)] Başarı: 3/3 | Ort. Maliyet: 10.61 | Ort. Süre: 0.6730s
+
+TALEP #2: S=24 -> D=221 (İstenen BW: 172.0 Mbps)
+  [Genetik Algoritma (GA)] Başarı: 3/3 | Ort. Maliyet: 6.07 | Ort. Süre: 0.1159s
+  [Karınca Kolonisi (ACO)] Başarı: 3/3 | Ort. Maliyet: 10.83 | Ort. Süre: 1.7590s
+  [Q-Öğrenme (RL)] Başarı: 3/3 | Ort. Maliyet: 14.37 | Ort. Süre: 0.6468s
+
+TALEP #3: S=32 -> D=42 (İstenen BW: 162.0 Mbps)
+  [Genetik Algoritma (GA)] Başarı: 3/3 | Ort. Maliyet: 3.90 | Ort. Süre: 0.1128s
+  [Karınca Kolonisi (ACO)] Başarı: 3/3 | Ort. Maliyet: 12.95 | Ort. Süre: 1.8935s
+  [Q-Öğrenme (RL)] Başarı: 3/3 | Ort. Maliyet: 9.43 | Ort. Süre: 0.8287s
+
+TALEP #4: S=37 -> D=208 (İstenen BW: 124.0 Mbps)
+  [Genetik Algoritma (GA)] Başarı: 3/3 | Ort. Maliyet: 3.68 | Ort. Süre: 0.1496s
+  [Karınca Kolonisi (ACO)] Başarı: 3/3 | Ort. Maliyet: 10.56 | Ort. Süre: 2.1536s
+  [Q-Öğrenme (RL)] Başarı: 3/3 | Ort. Maliyet: 10.48 | Ort. Süre: 0.7063s
+
+TALEP #5: S=51 -> D=124 (İstenen BW: 94.0 Mbps)
+  [Genetik Algoritma (GA)] Başarı: 3/3 | Ort. Maliyet: 3.29 | Ort. Süre: 0.1269s
+  [Karınca Kolonisi (ACO)] Başarı: 3/3 | Ort. Maliyet: 6.66 | Ort. Süre: 0.9851s
+  [Q-Öğrenme (RL)] Başarı: 3/3 | Ort. Maliyet: 9.30 | Ort. Süre: 0.6494s
