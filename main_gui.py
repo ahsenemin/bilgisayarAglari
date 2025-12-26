@@ -684,7 +684,7 @@ class NetworkVisualizer(QMainWindow):
                 self.lbl_res.setText(f"{metrics.get('res_cost',0):.2f}")
                 self.draw_path(path, QColor("#e0af68"))
             else:
-                self.lbl_status.setText("❌ YOL BULUNAMADI")
+                self.lbl_status.setText("YOL BULUNAMADI")
                 self.lbl_status.setStyleSheet("background-color: #24283b; color: #f7768e; font-weight: 900; font-size: 16px; border-radius: 10px; padding: 20px; border: 2px solid #f7768e;")
                 self.lbl_route.setText("-")
         elif self.mode == "Compare":
@@ -695,7 +695,7 @@ class NetworkVisualizer(QMainWindow):
         valid = [x for x in self.comp_data if x['path']]
         if not valid: 
             QMessageBox.warning(self, "Başarısız", "Hiçbir algoritma yol bulamadı."); 
-            self.lbl_status.setText("❌ BAŞARISIZ")
+            self.lbl_status.setText("BAŞARISIZ")
             return
         
         sorted_results = sorted(valid, key=lambda x: x['cost'])
