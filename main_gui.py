@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QGraphicsScene,
                                QPushButton, QDoubleSpinBox, QSpinBox, QFrame, QComboBox, 
                                QTextEdit, QMessageBox, QProgressBar, QGridLayout, QGroupBox, 
                                QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
-                               QSlider) # <--- TAMBAHKAN QSLIDER DISINI
+                               QSlider)
 from PySide6.QtCore import Qt, QThread, Signal, Slot, QTimer
 from PySide6.QtGui import QPen, QBrush, QColor, QPainter, QFont
 
@@ -78,18 +78,9 @@ class NetworkManager:
         if self.graph.number_of_nodes() > 0:
             nodes_sorted = sorted(list(self.graph.nodes()))
             temp_G = self.graph.subgraph(nodes_sorted)
-            
-            # --- PERBAIKAN: Jarak Antar Node Lebih Lebar ---
-            # 'k' menentukan jarak optimal. Semakin besar k, semakin renggang.
-            # Kita buat dinamis berdasarkan jumlah node.
             k_val = 2.0 / math.sqrt(self.graph.number_of_nodes()) 
-            
             raw_pos = nx.spring_layout(temp_G, seed=seed, k=k_val, iterations=100)
-            
-            # --- PERBAIKAN: Skala Koordinat Sangat Besar ---
-            # Sebelumnya 650, sekarang 2500 agar node benar-benar menyebar
             cx, cy, scale = 400, 400, 2500  
-            
             self.pos_cache = {} 
             for n, p in raw_pos.items():
                 self.pos_cache[n] = (cx + p[0]*scale, cy + p[1]*scale)
@@ -249,7 +240,7 @@ class NetworkVisualizer(QMainWindow):
         main_lo = QHBoxLayout(central); main_lo.setSpacing(20); main_lo.setContentsMargins(20,20,20,20)
 
         # ==============================================================================
-        # 1. PANEL KIRI (INPUT) - TAMPILAN BARU
+        # 1. PANEL KIRI (INPUT)
         # ==============================================================================
         left = QFrame(); left.setObjectName("Panel"); left.setFixedWidth(340)
         left_lo = QVBoxLayout(left); left_lo.setSpacing(15); left_lo.setContentsMargins(20,20,20,20)
@@ -257,21 +248,17 @@ class NetworkVisualizer(QMainWindow):
         title = QLabel("KONTROL MERKEZİ"); title.setObjectName("Header"); title.setAlignment(Qt.AlignCenter)
         left_lo.addWidget(title)
 
-        # --- BAGIAN TOPOLOGI (EDITED: LABEL DI ATAS) ---
         grp_route = QGroupBox("TOPOLOJİ AYARLARI")
-        # Gunakan HBox untuk menjejerkan Sumber dan Tujuan
         route_inner_lo = QHBoxLayout(grp_route); route_inner_lo.setSpacing(15)
         
         max_id = max(list(self.net.graph.nodes)) if self.net.graph.nodes else 0
         
-        # Wadah Sumber
         src_cont = QWidget()
         src_vlo = QVBoxLayout(src_cont); src_vlo.setContentsMargins(0,0,0,0); src_vlo.setSpacing(5)
         lbl_s = QLabel("Kaynak (Source)"); lbl_s.setObjectName("InputLabel")
         self.spin_s = QSpinBox(); self.spin_s.setRange(0, max_id)
         src_vlo.addWidget(lbl_s); src_vlo.addWidget(self.spin_s)
         
-        # Wadah Tujuan
         dst_cont = QWidget()
         dst_vlo = QVBoxLayout(dst_cont); dst_vlo.setContentsMargins(0,0,0,0); dst_vlo.setSpacing(5)
         lbl_d = QLabel("Hedef (Dest)"); lbl_d.setObjectName("InputLabel")
@@ -282,11 +269,9 @@ class NetworkVisualizer(QMainWindow):
         route_inner_lo.addWidget(dst_cont)
         left_lo.addWidget(grp_route)
 
-        # --- BAGIAN OPTIMASI & BOBOT (EDITED: SLIDER VERTICAL) ---
         grp_algo = QGroupBox("OPTİMİZASYON STRATEJİSİ")
         g_al_lo = QVBoxLayout(grp_algo); g_al_lo.setSpacing(15)
         
-        # Pilihan Algoritma
         algo_cont = QWidget()
         algo_vlo = QVBoxLayout(algo_cont); algo_vlo.setContentsMargins(0,0,0,0); algo_vlo.setSpacing(5)
         algo_vlo.addWidget(QLabel("Algoritma Seçimi:", objectName="InputLabel"))
@@ -294,39 +279,26 @@ class NetworkVisualizer(QMainWindow):
         algo_vlo.addWidget(self.combo)
         g_al_lo.addWidget(algo_cont)
         
-        # Judul Bobot
         g_al_lo.addWidget(QLabel("Ağırlıklar (Slider):", objectName="InputLabel"))
 
-        # Fungsi Pembantu membuat Slider
         def create_slider_row(text, default_val):
             container = QWidget()
             v_layout = QVBoxLayout(container); v_layout.setContentsMargins(0,0,0,0); v_layout.setSpacing(2)
-            
-            # Label Judul Kecil
             lbl_title = QLabel(text); lbl_title.setStyleSheet("color: #a9b1d6; font-size: 11px;")
             v_layout.addWidget(lbl_title)
-            
-            # Baris Slider + Angka
             h_layout = QHBoxLayout(); h_layout.setContentsMargins(0,0,0,0)
-            
             slider = QSlider(Qt.Horizontal)
             slider.setRange(0, 100)
             slider.setValue(int(default_val * 100))
-            
             lbl_val = QLabel(f"{default_val:.2f}")
             lbl_val.setStyleSheet("color: #7aa2f7; font-weight: bold; font-family: Consolas;")
             lbl_val.setFixedWidth(40); lbl_val.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-            
-            # Update label saat digeser
             slider.valueChanged.connect(lambda v: lbl_val.setText(f"{v/100:.2f}"))
-            
             h_layout.addWidget(slider)
             h_layout.addWidget(lbl_val)
             v_layout.addLayout(h_layout)
-            
             return container, slider
 
-        # Membuat 3 Slider secara Vertikal (Kebawah)
         w1_wid, self.slider_w1 = create_slider_row("Gecikme (Delay)", 0.4)
         w2_wid, self.slider_w2 = create_slider_row("Güvenilirlik (Reliability)", 0.3)
         w3_wid, self.slider_w3 = create_slider_row("Kaynak (Resource)", 0.3)
@@ -357,7 +329,7 @@ class NetworkVisualizer(QMainWindow):
         main_lo.addWidget(left)
 
         # ==============================================================================
-        # 2. PANEL TENGAH (GRAFİK) - Tidak Berubah
+        # 2. PANEL TENGAH (GRAFİK)
         # ==============================================================================
         center = QFrame(); center.setObjectName("Panel")
         center_lo = QVBoxLayout(center); center_lo.setContentsMargins(15,15,15,15)
@@ -371,18 +343,11 @@ class NetworkVisualizer(QMainWindow):
         center_lo.addLayout(tool_lo)
 
         self.scene = QGraphicsScene()
-        
-        # --- PERBAIKAN: SceneRect Sangat Luas ---
-        # Karena skala koordinat diperbesar jadi 2500, canvas harus diperbesar juga
-        # Rentang -2500 sampai 3500 (total 6000x6000 px)
         self.scene.setSceneRect(-2500, -2500, 6000, 6000) 
 
         self.view = QGraphicsView(self.scene); self.view.setRenderHint(QPainter.Antialiasing)
         self.view.setBackgroundBrush(QBrush(QColor("#1a1c29"))); self.view.setStyleSheet("border: none; border-radius: 8px;")
-        
-        # Biarkan user bisa scroll/pan bebas
         self.view.setDragMode(QGraphicsView.ScrollHandDrag) 
-        
         center_lo.addWidget(self.view)
 
         legend_lo = QHBoxLayout(); legend_lo.setContentsMargins(0, 5, 0, 0)
@@ -396,7 +361,7 @@ class NetworkVisualizer(QMainWindow):
         main_lo.addWidget(center, stretch=1)
 
         # ==============================================================================
-        # 3. PANEL KANAN (HASIL & LOG) - Tidak Berubah
+        # 3. PANEL KANAN (HASIL & LOG)
         # ==============================================================================
         right = QFrame(); right.setObjectName("Panel"); right.setFixedWidth(340)
         right_lo = QVBoxLayout(right); right_lo.setSpacing(15); right_lo.setContentsMargins(20,20,20,20)
@@ -408,7 +373,6 @@ class NetworkVisualizer(QMainWindow):
         self.lbl_status.setStyleSheet("background-color: #24283b; color: #565f89; font-weight: 900; font-size: 16px; border-radius: 10px; padding: 20px; border: 2px dashed #414868;")
         right_lo.addWidget(self.lbl_status)
 
-        # --- GRUP 1: TEKLİ ANALİZ DETAYLARI ---
         self.grp_single_details = QWidget()
         single_lo = QVBoxLayout(self.grp_single_details); single_lo.setContentsMargins(0,0,0,0); single_lo.setSpacing(15)
         
@@ -442,7 +406,6 @@ class NetworkVisualizer(QMainWindow):
         single_lo.addWidget(self.grp_qos)
         right_lo.addWidget(self.grp_single_details)
 
-        # --- GRUP 2: KARŞILAŞTIRMA TABLOSU ---
         self.grp_compare_table = QGroupBox("Karşılaştırma Sonuçları")
         self.grp_compare_table.setVisible(False)
         cmp_lo = QVBoxLayout(self.grp_compare_table)
@@ -460,7 +423,6 @@ class NetworkVisualizer(QMainWindow):
         cmp_lo.addWidget(self.table_res)
         right_lo.addWidget(self.grp_compare_table)
 
-        # --- GRUP 3: TOPLU DENEY TABLOSU ---
         self.grp_batch_table = QGroupBox("Toplu Deney Sonuçları (Ort.)")
         self.grp_batch_table.setVisible(False)
         batch_lo = QVBoxLayout(self.grp_batch_table)
@@ -479,7 +441,6 @@ class NetworkVisualizer(QMainWindow):
         batch_lo.addWidget(self.table_batch)
         right_lo.addWidget(self.grp_batch_table)
 
-        # --- Log System ---
         right_lo.addSpacing(10)
         lbl_log = QLabel("Sistem Logları:"); lbl_log.setStyleSheet("color: #73daca; font-weight: bold; margin-top: 5px;")
         right_lo.addWidget(lbl_log)
@@ -488,12 +449,9 @@ class NetworkVisualizer(QMainWindow):
 
         main_lo.addWidget(right)
 
-        # Başlangıç Çizimi
         self.draw_graph_background(); self.path_items = []; self.comp_data = []
-
         QTimer.singleShot(100, lambda: self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio))
 
-    # --- AUTO FIT RESIZE ---
     def resizeEvent(self, event):
         if hasattr(self, 'view') and hasattr(self, 'scene'):
              self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
@@ -504,20 +462,17 @@ class NetworkVisualizer(QMainWindow):
              self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
         super().showEvent(event)
 
-    # --- GÖRSELLEŞTİRME MANTIĞI ---
     def redraw_network(self):
         self.log.append("🔄 Topoloji yeniden yerleştiriliyor...")
         self.net.calculate_layout(seed=random.randint(1, 10000))
         self.draw_graph_background()
         self.path_items = []
-        # Fit view lagi setelah redraw
         self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
 
     def draw_graph_background(self):
         self.scene.clear(); self.path_items = []
         if self.net.graph.number_of_nodes() == 0: return
         
-        # Garis tipis agar tidak semrawut
         pen = QPen(QColor(86, 95, 137, 30)); pen.setWidth(1) 
         
         for u, v in self.net.graph.edges():
@@ -525,17 +480,13 @@ class NetworkVisualizer(QMainWindow):
                 p1 = self.net.pos_cache[u]; p2 = self.net.pos_cache[v]
                 self.scene.addLine(p1[0], p1[1], p2[0], p2[1], pen)
         
-        # Node agak kecil agar tidak saling menutupi
         brush = QBrush(QColor("#414868")); pen_n = QPen(Qt.NoPen)
         for n in self.net.graph.nodes():
             if n in self.net.pos_cache:
                 x, y = self.net.pos_cache[n]
-                # Ukuran node diperkecil sedikit (12px) agar renggang
                 self.scene.addEllipse(x-6, y-6, 12, 12, pen_n, brush)
-                
-                # Opsional: Tampilkan ID node hanya jika di-zoom dekat (level of detail)
-                # Tapi untuk performa, kita skip teks ID node di background
 
+    # --- PERUBAHAN UTAMA DI SINI ---
     def draw_path(self, path, color=QColor("#e0af68")):
         for item in self.path_items: 
             try: 
@@ -545,8 +496,11 @@ class NetworkVisualizer(QMainWindow):
         
         if not path: return
 
-        pen_glow = QPen(color); pen_glow.setWidth(6); pen_glow.setColor(QColor(color.red(), color.green(), color.blue(), 80))
-        pen_core = QPen(color); pen_core.setWidth(2)
+        # 1. BUAT GARIS LEBIH TEBAL
+        pen_glow = QPen(color); pen_glow.setWidth(100); # Awalnya 6, diubah jadi 25 (Sangat tebal untuk glow)
+        pen_glow.setColor(QColor(color.red(), color.green(), color.blue(), 100)) # Alpha sedikit dinaikkan
+        
+        pen_core = QPen(color); pen_core.setWidth(50); # Awalnya 2, diubah jadi 8 (Garis inti tebal)
         
         for i in range(len(path)-1):
             u, v = path[i], path[i+1]
@@ -555,38 +509,43 @@ class NetworkVisualizer(QMainWindow):
                 self.path_items.append(self.scene.addLine(p1[0], p1[1], p2[0], p2[1], pen_glow))
                 self.path_items.append(self.scene.addLine(p1[0], p1[1], p2[0], p2[1], pen_core))
         
+        # 2. BUAT NODE SUMBER DAN TUJUAN JAUH LEBIH BESAR
         if path:
             s, e = path[0], path[-1]
+            node_radius = 100 # Radius 45 -> Diameter 90 piksel (Sangat Besar)
+            
             if s in self.net.pos_cache:
                 sp = self.net.pos_cache[s]
-                self.path_items.append(self.scene.addEllipse(sp[0]-15, sp[1]-15, 30, 30, QPen(Qt.NoPen), QBrush(QColor("#9ece6a"))))
+                # Menggambar lingkaran besar untuk Sumber
+                self.path_items.append(self.scene.addEllipse(
+                    sp[0]-node_radius, sp[1]-node_radius, node_radius*2, node_radius*2, 
+                    QPen(Qt.NoPen), QBrush(QColor("#9ece6a"))))
+            
             if e in self.net.pos_cache:
                 ep = self.net.pos_cache[e]
-                self.path_items.append(self.scene.addEllipse(ep[0]-15, ep[1]-15, 30, 30, QPen(Qt.NoPen), QBrush(QColor("#f7768e"))))
+                # Menggambar lingkaran besar untuk Tujuan
+                self.path_items.append(self.scene.addEllipse(
+                    ep[0]-node_radius, ep[1]-node_radius, node_radius*2, node_radius*2, 
+                    QPen(Qt.NoPen), QBrush(QColor("#f7768e"))))
 
-    # --- BUTON İŞLEVLERİ (MODIFIKASI: Ambil Nilai dari Slider) ---
     def set_ui_busy(self, busy):
         for b in [self.btn_run, self.btn_cmp, self.btn_batch]: b.setEnabled(not busy)
         self.pbar.setVisible(busy); 
         if not busy: self.pbar.setValue(0)
     
-    # Helper untuk mengambil nilai float dari slider
     def get_weights(self):
-        # Slider range 0-100, dibagi 100 jadi 0.0-1.0
         return self.slider_w1.value()/100.0, self.slider_w2.value()/100.0, self.slider_w3.value()/100.0
 
     def start_single(self):
         if not AG_AVAILABLE: QMessageBox.critical(self, "Hata", "ag.py eksik!"); return
         self.mode = "Single"; self.set_ui_busy(True)
-        
         self.grp_single_details.setVisible(True)
         self.grp_compare_table.setVisible(False)
         self.grp_batch_table.setVisible(False)
         self.lbl_status.setText("HESAPLANIYOR...")
-        
         self.log.append("--- Simülasyon Başlatılıyor ---")
         algo = self.combo.currentText()
-        w1, w2, w3 = self.get_weights() # Ambil dari slider
+        w1, w2, w3 = self.get_weights() 
         params = (self.spin_s.value(), self.spin_d.value(), w1, w2, w3, algo)
         self.worker = CalculationWorker(self.solver, "Single", params)
         self.worker.result_ready.connect(self.handle_result)
@@ -596,15 +555,13 @@ class NetworkVisualizer(QMainWindow):
     def start_compare(self):
         if not AG_AVAILABLE: QMessageBox.critical(self, "Hata", "ag.py eksik!"); return
         self.mode = "Compare"; self.set_ui_busy(True); self.comp_data = []
-        
         self.grp_single_details.setVisible(False)
         self.grp_compare_table.setVisible(True)
         self.grp_batch_table.setVisible(False)
         self.table_res.setRowCount(0) 
         self.lbl_status.setText("KIYASLANIYOR...")
-        
         self.log.append("--- Karşılaştırma Başlatılıyor ---")
-        w1, w2, w3 = self.get_weights() # Ambil dari slider
+        w1, w2, w3 = self.get_weights() 
         params = (self.spin_s.value(), self.spin_d.value(), w1, w2, w3, "ALL")
         self.worker = CalculationWorker(self.solver, "Compare", params)
         self.worker.result_ready.connect(self.handle_result)
@@ -614,14 +571,12 @@ class NetworkVisualizer(QMainWindow):
     def start_batch_experiment(self):
         if not AG_AVAILABLE: return
         self.set_ui_busy(True); self.pbar.setRange(0, 100); self.log.clear()
-        
         self.grp_single_details.setVisible(False)
         self.grp_compare_table.setVisible(False)
         self.grp_batch_table.setVisible(True)
         self.table_batch.setRowCount(0)
         self.lbl_status.setText("TOPLU TEST...")
-
-        w1, w2, w3 = self.get_weights() # Ambil dari slider
+        w1, w2, w3 = self.get_weights() 
         weights = [w1, w2, w3]
         self.batch_worker = BatchExperimentWorker(self.solver, weights)
         self.batch_worker.log_signal.connect(self.log.append)
@@ -638,20 +593,16 @@ class NetworkVisualizer(QMainWindow):
             avg_cost = data['cost'] / data['success'] if data['success'] > 0 else 0
             avg_time = data['time'] / cnt
             success_rate = (data['success'] / cnt) * 100
-
             short_name = algo.split("(")[-1].strip(")") if "(" in algo else algo
-            
             item_name = QTableWidgetItem(short_name)
             item_cost = QTableWidgetItem(f"{avg_cost:.2f}")
             item_time = QTableWidgetItem(f"{avg_time:.4f}s")
             item_succ = QTableWidgetItem(f"%{success_rate:.0f}")
-            
             self.table_batch.setItem(row, 0, item_name)
             self.table_batch.setItem(row, 1, item_cost)
             self.table_batch.setItem(row, 2, item_time)
             self.table_batch.setItem(row, 3, item_succ)
             row += 1
-        
         self.lbl_status.setText("TAMAMLANDI")
         self.lbl_status.setStyleSheet("background-color: #24283b; color: #9ece6a; font-weight: 900; font-size: 16px; border-radius: 10px; padding: 20px; border: 2px solid #9ece6a;")
 
@@ -661,7 +612,7 @@ class NetworkVisualizer(QMainWindow):
 
     @Slot(str, object, object, float)
     def handle_result(self, algo, path, metrics, duration):
-        w1, w2, w3 = self.get_weights() # Ambil dari slider
+        w1, w2, w3 = self.get_weights() 
         cost = 0.0
         if path:
             cost = (w1*metrics.get('delay',0)) + (w2*metrics.get('rel_cost',0)*100) + (w3*metrics.get('res_cost',0))
@@ -672,12 +623,10 @@ class NetworkVisualizer(QMainWindow):
                 self.lbl_status.setText("EN İYİ YOL BULUNDU")
                 self.lbl_status.setStyleSheet("background-color: #24283b; color: #9ece6a; font-weight: 900; font-size: 16px; border-radius: 10px; padding: 20px; border: 2px solid #9ece6a;")
                 self.lbl_time.setText(f"{duration:.4f} s")
-                
                 rota_str = " → ".join(map(str, path))
                 self.lbl_route.setText(rota_str) 
                 self.lbl_route.setToolTip(rota_str)
                 self.log.append(f"📍 Rota: {rota_str}")
-
                 self.lbl_score.setText(f"{cost:.4f}")
                 self.lbl_delay.setText(f"{metrics.get('delay',0):.2f} ms")
                 self.lbl_rel.setText(f"{metrics.get('rel_cost',0):.4f}")
@@ -697,30 +646,23 @@ class NetworkVisualizer(QMainWindow):
             QMessageBox.warning(self, "Başarısız", "Hiçbir algoritma yol bulamadı."); 
             self.lbl_status.setText("BAŞARISIZ")
             return
-        
         sorted_results = sorted(valid, key=lambda x: x['cost'])
         winner = sorted_results[0]
-        
         self.lbl_status.setText(f"KAZANAN: {winner['name']}")
         self.lbl_status.setStyleSheet("background-color: #24283b; color: #bb9af7; font-weight: 900; font-size: 14px; border-radius: 10px; padding: 10px; border: 2px solid #bb9af7;")
-        
         self.table_res.setRowCount(len(sorted_results))
         for i, res in enumerate(sorted_results):
             short_name = res['name'].split("(")[-1].strip(")") if "(" in res['name'] else res['name']
-            
             item_name = QTableWidgetItem(short_name)
             item_cost = QTableWidgetItem(f"{res['cost']:.2f}")
             item_time = QTableWidgetItem(f"{res['time']:.4f}s")
-            
             if i == 0:
                 for it in [item_name, item_cost, item_time]:
                     it.setForeground(QBrush(QColor("#9ece6a")))
                     it.setFont(QFont("Consolas", 9, QFont.Bold))
-            
             self.table_res.setItem(i, 0, item_name)
             self.table_res.setItem(i, 1, item_cost)
             self.table_res.setItem(i, 2, item_time)
-
         self.draw_path(winner['path'], QColor("#bb9af7"))
         self.log.append(f"Karşılaştırma tamamlandı. Kazanan: {winner['name']}")
 
