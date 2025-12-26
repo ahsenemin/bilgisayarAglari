@@ -11,9 +11,11 @@ import ag as ag  # <-- Ağ (Graph) buradan geliyor (ag.py değişmedi!)
 # 0) AĞIRLIKLAR (Weighted Sum Method) - DÜZENLENEBİLİR ALAN
 # =========================================================
 DEFAULT_WEIGHTS = {"w_delay": 1.0, "w_rel": 1.0, "w_bw": 1.0}
+# Ağırlıkları normalize et
 
 def normalize_weights(w_delay, w_rel, w_bw):
     s = float(w_delay) + float(w_rel) + float(w_bw)
+
     if s <= 0:
         raise ValueError("Ağırlıkların toplamı 0 veya negatif olamaz.")
     return {
@@ -40,7 +42,8 @@ def safe_int(x):
 G = ag.G  # NetworkX Graph
 
 # Komşuluk listesi (Q-learning için)
-neighbors = {n: list(G.neighbors(n)) for n in G.nodes()}
+neighbors = {n: list(G.neighbors(n)) for n in G.nodes()} # node: [komşu düğümler]
+# n düğümüne doğrudan bağlı olan komşu düğümleri verir
 
 # =========================================================
 # 2) DEMAND VERİSİNİ OKU (Opsiyonel)
@@ -63,45 +66,68 @@ if os.path.exists(DEMAND_CSV):
 INVALID_ACTION_PENALTY = 1e6  # büyük ceza -> reward = -1e6
 
 def reward_multi_with_demand(s, a, s_next, G, weights, demand_mbps=None):
+    # s = mevcut düğüm
+    # a = seçilen komşu düğüm
+    # s_next = sonraki düğüm
+    # G = ağ (networkx graph)
+    # weights = ağırlıklar sözlüğü
+    # demand_mbps = talep edilen bant genişliği (opsiyonel)
     """
     Multi-objective cost:
       cost = w_delay*delay + w_rel*(1-rel) + w_bw*(100/bandwidth)
     Hard constraint:
       eğer demand_mbps varsa ve edge bandwidth < demand -> aşırı ceza
     """
+
     edge = G.edges[s, s_next]
     node_next = G.nodes[s_next]
+    # Edge ve sonraki düğümün attribute'ları
 
     # HARD CONSTRAINT (Demand)
     if demand_mbps is not None:
         if float(edge['bandwidth']) < float(demand_mbps):
             return -INVALID_ACTION_PENALTY
+    # eğer talep edilen bant genişliği sağlanmıyorsa büyük ceza
+    # (Bu, Q-learning'in bu tür yolları öğrenmemesini sağlar)
 
     delay = float(edge['delay']) + float(node_next['processing_delay'])  # ms
+    # delay = delay_ms + s_ms
     rel = float(edge['reliability']) * float(node_next['reliability'])
+    # reliability = r_link * r_node
     unreliab = 1.0 - rel
+    # Güvenilirlik metriği maksimizasyon probleminden minimizasyona dönüştürülmüştür. Bu amaçla basit yaklaşım olarak 1 - rel kullanılmıştır.”
+
     inv_bw = 100.0 / max(1.0, float(edge['bandwidth']))
+    # geniş kapasite = düşük maliyet
 
     cost = (weights["w_delay"] * delay +
             weights["w_rel"]   * unreliab +
             weights["w_bw"]    * inv_bw)
 
     return -cost
+    # Negatif maliyet = ödül
+    # Amaç: ödülü maksimize etmek = maliyeti minimize etmek
 
+
+# Kullanıcadan W_delay, W_rel, W_bw bir, demand_mbps bir kere çekilir
+# Ağırlıklar ve demand değerini içine alarak, Q-learning’in beklediği imzaya sahip özelleştirilmiş bir reward fonksiyonu üretir; bu sayede öğrenme sırasında bu parametreler tekrar tekrar taşınmadan kullanılabilir.
 def make_reward_fn(weights, demand_mbps=None):
     def _reward_fn(s, a, s_next, G):
         return reward_multi_with_demand(s, a, s_next, G, weights, demand_mbps=demand_mbps)
     return _reward_fn
 
-def choose_action(state, neighbors, Q, epsilon):
-    if random.random() < epsilon:
-        return random.choice(neighbors[state])
-    actions = neighbors[state]
-    q_vals = [Q[(state, a)] for a in actions]
-    max_q = max(q_vals)
-    best_actions = [a for a, q in zip(actions, q_vals) if q == max_q]
-    return random.choice(best_actions)
 
+# Hangi adımı seçeceğime nasıl karar veriyorum? keşfetme vs. sömürü dengesi
+def choose_action(state, neighbors, Q, epsilon):
+    if random.random() < epsilon: # 0 ile 1 arasında rastgele sayı < "epsilon" ise
+        return random.choice(neighbors[state]) # rastgele komşuya git
+    actions = neighbors[state] # mevcut düğümün komşuları
+    q_vals = [Q[(state, a)] for a in actions] # her eylem için Q değeri
+    max_q = max(q_vals) # en yüksek Q değeri
+    best_actions = [a for a, q in zip(actions, q_vals) if q == max_q] # en iyi Q değerine sahip eylemler
+    return random.choice(best_actions)  # en iyi eylemlerden rastgele seçim
+
+# bir adım attığımda ortamda ne oluyor?
 def step(state, action, goal_node, G, reward_fn, fail_with_reliability=False):
     s_next = action
 
@@ -121,18 +147,30 @@ def step(state, action, goal_node, G, reward_fn, fail_with_reliability=False):
 
     return s_next, r, terminated
 
+# Bu fonksiyon, her episode’da başlangıç düğümünden başlayarak epsilon-greedy politika ile adımlar atar, her adımda ödül ve sonraki durumun en iyi Q değerine göre Q(s,a) değerlerini güncelleyerek optimal politikayı öğrenir.
 def q_learning(
     G, neighbors, start_node, goal_node,
     reward_fn, episodes=5000,
     alpha=0.1, gamma=0.95,
-    epsilon_start=1.0, epsilon_end=0.05,
+    epsilon_start=1.0, # yüzde yüz keşif ile başla
+    epsilon_end=0.05,
     epsilon_decay_steps=3000,
     max_steps_per_episode=200,
     stochastic_fail=False
 ):
-    Q = defaultdict(float)
+    """
+    episodes: kaç kez deneme yapacak (ne kadar çok → o kadar öğrenir)
+    alpha: öğrenme oranı (yeni bilgi eskiyi ne kadar değiştirsin)
+    gamma: gelecek ödülün önemi (0.0 sadece anlık, 0.99 uzun vadeli)
+    epsilon_start/end/decay: keşiften sömürüye geçiş planı
+    max_steps_per_episode: episode sonsuza gitmesin diye güvenlik limiti
+    stochastic_fail: reliability’ye bağlı rastgele “çökme” simülasyonu
+
+    """
+    Q = defaultdict(float) # Q-değerleri için sözlük, başlangıçta tüm değerler 0.0
     epsilon = epsilon_start
     eps_decay = (epsilon_start - epsilon_end) / max(1, epsilon_decay_steps)
+    # her episode sonunda epsilon’ı azaltmak için adım miktarı
 
     for _ in range(episodes):
         s = start_node
@@ -158,19 +196,29 @@ def q_learning(
 
     return Q
 
+#Q-learning sonucu elde edilen Q tablosuna bakarak, başlangıç düğümünden hedef düğüme en yüksek Q-değerlerini izleyen yolu çıkarır. öğrenilmiş Q-değerlerini kullanarak her adımda en yüksek Q-değerine sahip eylemi seçip, döngüleri engelleyerek başlangıç düğümünden hedef düğümüne giden en iyi yolu üretir.
 def greedy_path(Q, neighbors, start, goal, max_len=200):
+    """
+
+    Q → öğrenilmiş Q tablosu (Q[(state, action)])
+    neighbors → her düğümden gidilebilecek komşular
+    start → başlangıç düğümü
+    goal → hedef düğümü
+    max_len → güvenlik limiti (sonsuz döngü olmasın diye)
+
+    """
     path = [start]
     s = start
     visited = set([start])
 
-    for _ in range(max_len):
-        if s == goal:
+    for _ in range(max_len): # maksimum adım sayısı
+        if s == goal: # hedefe ulaşıldıysa
             break
-        if len(neighbors.get(s, [])) == 0:
+        if len(neighbors.get(s, [])) == 0: # gidilecek yer yoksa dur
             break
 
         actions = neighbors[s]
-        q_vals = [Q[(s, a)] for a in actions]
+        q_vals = [Q[(s, a)] for a in actions] # Burada hesaplama yok, sadece okuma var. 
         max_q = max(q_vals)
         best_actions = [a for a, q in zip(actions, q_vals) if q == max_q]
 
@@ -184,6 +232,7 @@ def greedy_path(Q, neighbors, start, goal, max_len=200):
 
     return path
 
+# verilen bir yol üzerindeki bağlantı ve düğüm özelliklerini kullanarak yolun gecikmesini, güvenilirliğini ve kapasite kısıtını hesaplar.
 def path_metrics(path, G):
     total_delay = 0.0
     total_rel = 1.0
@@ -270,6 +319,18 @@ def main():
         max_steps_per_episode=200,
         stochastic_fail=False
     )
+    """
+    
+    episodes=6000: 6000 kez start→goal denemesi
+    alpha=0.15: yeni bilgi %15 etkili
+    gamma=0.97: uzun vadeyi çok önemsiyor
+    epsilon_start=1.0 → başta %100 keşif
+    epsilon_end=0.05 → sonda %5 keşif
+    epsilon_decay_steps=4000 → 4000 episode boyunca epsilon azalır
+    max_steps_per_episode=200: dolaşıp durmasın
+    stochastic_fail=False: reliability’ye göre rastgele çökme kapalı
+
+    """
 
     best_path = greedy_path(Q, neighbors, start_node, goal_node)
     print("\nQ-learning ile bulunan greedy yol:", best_path)
