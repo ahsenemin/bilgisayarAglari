@@ -1,17 +1,17 @@
 # =====================================================
 # GEREKLİ KÜTÜPHANELER
 # =====================================================
-import glob                      # Dosya listeleme işlemleri için
-import os                        # İşletim sistemi dosya yolları
-import sys                       # Sistem argümanları ve çıkış işlemleri
-import random                    # Rastgele sayı üretimi
-import math                      # Matematiksel fonksiyonlar (log, sqrt vb.)
-import time                      # Zaman ölçümü ve bekleme işlemleri
+import glob                      # Dosya listeleme işlemleri
+import os                        # İşletim sistemi etkileşimi
+import sys                       # Sistem argümanları ve çıkış
+import random                    # Rastgelelik işlemleri
+import math                      # Matematiksel fonksiyonlar
+import time                      # Zaman ölçümü
 import networkx as nx            # Ağ (Graph) yapısı ve algoritmaları
 from collections import defaultdict
 import io
 
-# PySide6 (Arayüz Kütüphanesi) Bileşenleri
+# PySide6 (Grafik Arayüz) Bileşenleri
 from PySide6.QtWidgets import (QApplication, QMainWindow, QGraphicsScene, 
                                QGraphicsView, QVBoxLayout, QHBoxLayout, QWidget, QLabel, 
                                QPushButton, QDoubleSpinBox, QSpinBox, QFrame, QComboBox, 
@@ -22,17 +22,16 @@ from PySide6.QtCore import Qt, QThread, Signal, Slot, QTimer, QObject
 from PySide6.QtGui import QPen, QBrush, QColor, QPainter, QFont, QPainterPath
 
 # =====================================================
-# 1. HARİCİ MODÜL VE ALGORİTMA KONTROLLERİ
+# 1. HARİCİ MODÜL KONTROLLERİ
 # =====================================================
-# Proje içerisindeki diğer Python dosyalarının varlığı kontrol edilir.
-# Eksik dosya varsa ilgili algoritma devre dışı bırakılır.
+# Proje içerisindeki algoritma modüllerinin varlığı kontrol edilir.
 
 try: 
     import ag
-    AG_AVAILABLE = True          # Ağ oluşturucu (ag.py)
+    AG_AVAILABLE = True          # Ağ topolojisi (ag.py)
 except ImportError: 
     AG_AVAILABLE = False
-    print("UYARI: ag.py (Ağ Oluşturucu) bulunamadı!")
+    print("UYARI: ag.py bulunamadı!")
 
 try: 
     from genetik_proje import GenetikAlgoritma
@@ -43,32 +42,32 @@ except ImportError:
 
 try: 
     from karinca import ACORouting
-    ACO_AVAILABLE = True         # Karınca Kolonisi Algoritması
+    ACO_AVAILABLE = True         # Karınca Kolonisi
 except ImportError: 
     ACO_AVAILABLE = False
     print("UYARI: karinca.py bulunamadı!")
 
 try: 
     import q_learning as ql
-    RL_AVAILABLE = True          # Pekiştirmeli Öğrenme (Q-Learning)
+    RL_AVAILABLE = True          # Q-Learning
 except ImportError: 
     RL_AVAILABLE = False
     print("UYARI: q_learning.py bulunamadı!")
 
 try: 
     import deney_duzenegi
-    DENEY_AVAILABLE = True       # Toplu deney düzeneği
+    DENEY_AVAILABLE = True       # Toplu deney modülü
 except ImportError: 
     DENEY_AVAILABLE = False
-    print("UYARI: deney_duzenegi.py bulunamadı! Toplu deney çalışmayacak.")
+    print("UYARI: deney_duzenegi.py bulunamadı!")
 
 # =====================================================
-# 2. HESAPLAMA MOTORU (BACKEND LOGIC)
+# 2. HESAPLAMA MOTORU (BACKEND)
 # =====================================================
 
 def calculate_path_metrics_detailed(graph, path):
     """
-    Verilen bir yol (path) için gecikme, güvenilirlik ve kaynak maliyetlerini hesaplar.
+    Verilen yol (path) için Gecikme, Güvenilirlik ve Kaynak maliyetlerini hesaplar.
     """
     if not path or len(path) < 2: 
         return 0, 0, 0
@@ -77,7 +76,7 @@ def calculate_path_metrics_detailed(graph, path):
     rel_cost = 0.0
     res_cost = 0.0
 
-    # Bağlantı (Edge) üzerindeki maliyetler
+    # Kenar (Edge) Maliyetleri
     for i in range(len(path) - 1):
         u, v = path[i], path[i+1]
         if not graph.has_edge(u, v): 
@@ -86,21 +85,21 @@ def calculate_path_metrics_detailed(graph, path):
         edge = graph[u][v]
         total_delay += edge.get('delay', 0)
         
-        # Güvenilirlik logaritmik olarak toplanır
+        # Güvenilirlik (Logaritmik toplam)
         r_link = edge.get('reliability', 0.99)
         rel_cost += -math.log(r_link if r_link > 0 else 1e-6)
         
-        # Bant genişliği ters orantılı maliyet yaratır
+        # Kaynak Maliyeti (Bant genişliği ile ters orantılı)
         bw = edge.get('bandwidth', 100)
         res_cost += (1000.0 / (bw if bw > 0 else 1))
 
-    # Düğüm (Node) üzerindeki maliyetler
+    # Düğüm (Node) Maliyetleri
     for i, node in enumerate(path):
         n_data = graph.nodes[node]
         r_node = n_data.get('reliability', 0.99)
         rel_cost += -math.log(r_node if r_node > 0 else 1e-6)
         
-        # Başlangıç ve bitiş hariç işlem gecikmesi eklenir
+        # Başlangıç ve bitiş hariç işlem gecikmesi
         if i != 0 and i != len(path) - 1:
             total_delay += n_data.get('processing_delay', 0)
 
@@ -108,7 +107,7 @@ def calculate_path_metrics_detailed(graph, path):
 
 class NetworkManager:
     """
-    Ağ yapısını (Graph) tutar ve görselleştirme için düğüm pozisyonlarını hesaplar.
+    Ağ yapısını tutar ve görselleştirme koordinatlarını yönetir.
     """
     def __init__(self):
         self.graph = nx.DiGraph()
@@ -116,7 +115,6 @@ class NetworkManager:
         self.load_from_ag()
 
     def load_from_ag(self):
-        # ag.py dosyasındaki 'G' nesnesini yükler
         if AG_AVAILABLE and hasattr(ag, 'G'):
             orig = ag.G
             self.graph = orig.to_directed() if not orig.is_directed() else orig.copy()
@@ -125,18 +123,14 @@ class NetworkManager:
             self.graph = nx.DiGraph()
 
     def calculate_layout(self, seed=42):
-        # Düğümlerin ekrandaki koordinatlarını (spring layout) hesaplar
+        # Düğümlerin ekrandaki yerleşimini hesaplar (Spring Layout)
         if self.graph.number_of_nodes() > 0:
             nodes_sorted = sorted(list(self.graph.nodes()))
             temp_G = self.graph.subgraph(nodes_sorted)
             
-            # Düğümlerin birbirine çok yakın olmaması için K değeri optimizasyonu
             k_val = 4.0 / math.sqrt(self.graph.number_of_nodes()) 
-            
-            # Performans için iterasyon sayısı düşürüldü
             raw_pos = nx.spring_layout(temp_G, seed=seed, k=k_val, iterations=30)
             
-            # Koordinatları sahne (scene) boyutlarına göre ölçekle
             cx, cy, scale = 400, 400, 2500  
             self.pos_cache = {} 
             for n, p in raw_pos.items():
@@ -144,7 +138,7 @@ class NetworkManager:
 
 class RouteSolver:
     """
-    Seçilen algoritmaya göre rotayı bulan ve sonuçları döndüren sınıf.
+    GUI ile algoritmalar arasındaki köprü sınıfı.
     """
     def __init__(self, manager): 
         self.net = manager
@@ -155,19 +149,19 @@ class RouteSolver:
         graph_copy = self.net.graph.copy()
 
         try:
-            # Genetik Algoritma Çalıştırma
+            # 1. Genetik Algoritma
             if algo_type == "Genetik Algoritma (GA)" and GA_AVAILABLE:
                 ga = GenetikAlgoritma(graph_copy, src, dst, 50, 0.1, 50, weights)
                 path, _, duration = ga.calistir()
 
-            # Karınca Kolonisi Algoritması Çalıştırma
+            # 2. Karınca Kolonisi (ACO)
             elif algo_type == "Karınca Kolonisi (ACO)" and ACO_AVAILABLE:
                 start_t = time.time()
                 aco = ACORouting(graph_copy, src, dst, demand_bw, weights, 20, 30)
                 path = aco.solve()[0]
                 duration = time.time() - start_t
 
-            # Q-Learning (RL) Çalıştırma
+            # 3. Q-Learning (RL)
             elif algo_type == "Q-Öğrenme (RL)" and RL_AVAILABLE:
                 start_t = time.time()
                 nbrs = {n: list(graph_copy.neighbors(n)) for n in graph_copy.nodes()}
@@ -178,7 +172,7 @@ class RouteSolver:
                 if not path or path[-1] != dst: path = None
                 duration = time.time() - start_t
             
-            # Sonuç metriklerini hesaplama
+            # Sonuç Metrikleri
             if path:
                 d, r, c = calculate_path_metrics_detailed(self.net.graph, path)
                 metrics = {'delay': d, 'rel_cost': r, 'res_cost': c}
@@ -191,11 +185,11 @@ class RouteSolver:
         return path, metrics, duration
 
 # =====================================================
-# 3. İŞ PARÇACIKLARI (THREADS & WORKERS)
+# 3. İŞ PARÇACIKLARI (THREADS)
 # =====================================================
 
 class EmittingStream(QObject):
-    # Konsol çıktılarını (stdout) arayüze yönlendirmek için sinyal yayıcı
+    # stdout çıktılarını yakalayıp sinyal olarak yayar
     textWritten = Signal(str)
     def write(self, text):
         self.textWritten.emit(str(text))
@@ -204,7 +198,7 @@ class EmittingStream(QObject):
 
 class CalculationWorker(QThread):
     """
-    Arayüzün donmasını engellemek için algoritmaları arka planda çalıştıran thread.
+    Algoritmaları arayüzü dondurmadan arka planda çalıştırır.
     """
     result_ready = Signal(str, object, object, float)
     finished_all = Signal()
@@ -217,12 +211,10 @@ class CalculationWorker(QThread):
         s, d, bw, w1, w2, w3, algo = self.params 
         weights = [w1, w2, w3]
         
-        # Tek bir algoritma çalıştırılıyorsa
         if self.mode == "Single":
             p, m, t = self.solver.solve(algo, s, d, weights, demand_bw=bw)
             self.result_ready.emit(algo, p, m, t)
         
-        # Tüm algoritmalar kıyaslanıyorsa
         elif self.mode == "Compare":
             for name in ["Genetik Algoritma (GA)", "Karınca Kolonisi (ACO)", "Q-Öğrenme (RL)"]:
                 p, m, t = self.solver.solve(name, s, d, weights, demand_bw=bw)
@@ -232,7 +224,7 @@ class CalculationWorker(QThread):
 
 class MassExperimentWorker(QThread):
     """
-    Toplu deney modülünü (deney_duzenegi.py) çalıştıran ve çıktıları yakalayan thread.
+    deney_duzenegi.py dosyasını çalıştırarak toplu deney yapar.
     """
     log_signal = Signal(str)
     finished_signal = Signal()
@@ -246,14 +238,13 @@ class MassExperimentWorker(QThread):
             self.finished_signal.emit()
             return
 
-        # Konsol çıktısını yakalamak için yönlendirme
+        # Konsol yönlendirme
         original_stdout = sys.stdout
         stream = EmittingStream()
         stream.textWritten.connect(self.on_text_written)
         sys.stdout = stream
 
         original_argv = sys.argv
-        # Deney parametreleri: 20 talep, 5 tekrar
         sys.argv = ["deney_duzenegi.py", "--repeats", "5", "--demands", "20"] 
 
         try:
@@ -261,11 +252,10 @@ class MassExperimentWorker(QThread):
             deney_duzenegi.main()
             self.log_signal.emit("--- Toplu Deney Tamamlandı ---")
         except Exception as e:
-            self.log_signal.emit(f"HATA SIRASINDA: {str(e)}")
+            self.log_signal.emit(f"HATA: {str(e)}")
             import traceback
             traceback.print_exc()
         finally:
-            # Sistemi eski haline getir
             sys.stdout = original_stdout
             sys.argv = original_argv
             self.finished_signal.emit()
@@ -287,7 +277,7 @@ class NetworkVisualizer(QMainWindow):
         self.net = NetworkManager()
         self.solver = RouteSolver(self.net)
         
-        # Arayüz Stili (CSS benzeri StyleSheet)
+        # Arayüz Stili (Modern Dark Theme)
         self.setStyleSheet("""
             QMainWindow { background-color: #0f111a; font-family: 'Segoe UI', Roboto, sans-serif; }
             QFrame#Panel { background-color: #1a1c29; border-radius: 15px; border: 1px solid #2f334d; }
@@ -321,7 +311,7 @@ class NetworkVisualizer(QMainWindow):
         main_lo = QHBoxLayout(central); main_lo.setSpacing(20); main_lo.setContentsMargins(20,20,20,20)
 
         # -----------------------------
-        # 1. SOL PANEL (GİRİŞ AYARLARI)
+        # 1. SOL PANEL (AYARLAR)
         # -----------------------------
         left = QFrame(); left.setObjectName("Panel"); left.setFixedWidth(340)
         left_lo = QVBoxLayout(left); left_lo.setSpacing(15); left_lo.setContentsMargins(20,20,20,20)
@@ -329,14 +319,14 @@ class NetworkVisualizer(QMainWindow):
         title = QLabel("KONTROL MERKEZİ"); title.setObjectName("Header"); title.setAlignment(Qt.AlignCenter)
         left_lo.addWidget(title)
 
-        # Topoloji ve Talep Ayarları Grubu
+        # Topoloji Ayarları
         grp_route = QGroupBox("TOPOLOJİ & TALEP AYARLARI")
         route_main_lo = QVBoxLayout(grp_route); route_main_lo.setSpacing(10)
         
         row1_lo = QHBoxLayout(); row1_lo.setSpacing(10)
         max_id = max(list(self.net.graph.nodes)) if self.net.graph.nodes else 0
         
-        # Kaynak ve Hedef Seçimi
+        # Kaynak ve Hedef
         src_cont = QWidget()
         src_vlo = QVBoxLayout(src_cont); src_vlo.setContentsMargins(0,0,0,0); src_vlo.setSpacing(5)
         lbl_s = QLabel("Kaynak (Source)"); lbl_s.setObjectName("InputLabel")
@@ -364,7 +354,7 @@ class NetworkVisualizer(QMainWindow):
         route_main_lo.addLayout(row2_lo)
         left_lo.addWidget(grp_route)
         
-        # Algoritma ve Ağırlık Ayarları Grubu
+        # Strateji Ayarları
         grp_algo = QGroupBox("OPTİMİZASYON STRATEJİSİ")
         g_al_lo = QVBoxLayout(grp_algo); g_al_lo.setSpacing(15)
         algo_cont = QWidget()
@@ -374,7 +364,7 @@ class NetworkVisualizer(QMainWindow):
         algo_vlo.addWidget(self.combo)
         g_al_lo.addWidget(algo_cont)
         
-        # Ağırlık Sliderları (Gecikme, Güvenilirlik, Kaynak)
+        # Ağırlıklar
         g_al_lo.addWidget(QLabel("Ağırlıklar:", objectName="InputLabel"))
         def create_slider_row(text, default_val):
             container = QWidget()
@@ -397,7 +387,7 @@ class NetworkVisualizer(QMainWindow):
         g_al_lo.addWidget(w1_wid); g_al_lo.addWidget(w2_wid); g_al_lo.addWidget(w3_wid)
         left_lo.addWidget(grp_algo)
 
-        # Aksiyon Butonları
+        # Butonlar
         left_lo.addSpacing(10)
         self.btn_run = QPushButton("▶  HESAPLA (BAŞLAT)"); self.btn_run.setObjectName("BtnRun") 
         self.btn_run.clicked.connect(self.start_single)
@@ -419,7 +409,7 @@ class NetworkVisualizer(QMainWindow):
         main_lo.addWidget(left)
 
         # -----------------------------
-        # 2. ORTA PANEL (GRAFİK GÖRÜNTÜLEME)
+        # 2. ORTA PANEL (GRAFİK)
         # -----------------------------
         center = QFrame(); center.setObjectName("Panel")
         center_lo = QVBoxLayout(center); center_lo.setContentsMargins(15,15,15,15)
@@ -430,14 +420,12 @@ class NetworkVisualizer(QMainWindow):
         tool_lo.addWidget(btn_redraw)
         center_lo.addLayout(tool_lo)
 
-        # Grafik Sahnesi (Scene & View)
         self.scene = QGraphicsScene(); self.scene.setSceneRect(-2500, -2500, 6000, 6000) 
         self.view = QGraphicsView(self.scene); self.view.setRenderHint(QPainter.Antialiasing)
         self.view.setBackgroundBrush(QBrush(QColor("#1a1c29"))); self.view.setStyleSheet("border: none; border-radius: 8px;")
         self.view.setDragMode(QGraphicsView.ScrollHandDrag) 
         center_lo.addWidget(self.view)
 
-        # Lejant (Bilgi Kutucukları)
         legend_lo = QHBoxLayout(); legend_lo.setContentsMargins(0, 5, 0, 0)
         def mk_leg(col, txt):
             l_col = QLabel("●"); l_col.setStyleSheet(f"color: {col}; font-size: 18px;")
@@ -448,26 +436,23 @@ class NetworkVisualizer(QMainWindow):
         main_lo.addWidget(center, stretch=1)
 
         # -----------------------------
-        # 3. SAĞ PANEL (SONUÇ VE ANALİZ SEKMELERİ)
+        # 3. SAĞ PANEL (SONUÇLAR)
         # -----------------------------
         right = QFrame(); right.setObjectName("Panel"); right.setFixedWidth(380) 
         right_lo = QVBoxLayout(right); right_lo.setSpacing(10); right_lo.setContentsMargins(10,10,10,10)
 
-        # Durum Göstergesi Header
         self.lbl_status = QLabel("GİRİŞ BEKLENİYOR"); self.lbl_status.setAlignment(Qt.AlignCenter)
         self.lbl_status.setStyleSheet("background-color: #24283b; color: #565f89; font-weight: 900; font-size: 16px; border-radius: 10px; padding: 15px; border: 2px dashed #414868;")
         right_lo.addWidget(self.lbl_status)
 
-        # Sekme Yapısı
         self.tabs = QTabWidget()
         right_lo.addWidget(self.tabs)
 
-        # --- SEKME 1: ANALİZ (TEKİL & KARŞILAŞTIRMA) ---
+        # Sekme 1: Analiz
         self.tab_analysis = QWidget()
         self.tabs.addTab(self.tab_analysis, "📊 Analiz")
         analysis_lo = QVBoxLayout(self.tab_analysis); analysis_lo.setContentsMargins(10,10,10,10); analysis_lo.setSpacing(10)
         
-        # Tekil Analiz Detayları
         self.grp_single_details = QWidget()
         single_lo = QVBoxLayout(self.grp_single_details); single_lo.setContentsMargins(0,0,0,0); single_lo.setSpacing(10)
         
@@ -498,7 +483,6 @@ class NetworkVisualizer(QMainWindow):
         single_lo.addWidget(self.grp_qos)
         analysis_lo.addWidget(self.grp_single_details)
 
-        # Karşılaştırma Tablosu (Başlangıçta gizli)
         self.grp_compare_table = QGroupBox("Karşılaştırma Sonuçları")
         self.grp_compare_table.setVisible(False)
         cmp_lo = QVBoxLayout(self.grp_compare_table)
@@ -516,7 +500,7 @@ class NetworkVisualizer(QMainWindow):
         analysis_lo.addWidget(self.grp_compare_table)
         analysis_lo.addStretch()
 
-        # --- SEKME 2: RAPOR (HTML FORMATINDA) ---
+        # Sekme 2: Rapor
         self.tab_report = QWidget()
         self.tabs.addTab(self.tab_report, "📄 Rapor")
         rep_lo = QVBoxLayout(self.tab_report); rep_lo.setContentsMargins(0,10,0,0)
@@ -524,7 +508,7 @@ class NetworkVisualizer(QMainWindow):
         self.report_viewer.setHtml("<div style='color:#565f89; text-align:center; margin-top:50px;'>Henüz rapor oluşturulmadı.<br>Toplu deney başlatın.</div>")
         rep_lo.addWidget(self.report_viewer)
         
-        # --- SEKME 3: SİSTEM LOGLARI ---
+        # Sekme 3: Log
         self.tab_log = QWidget()
         self.tabs.addTab(self.tab_log, "🖥️ Log")
         log_lo = QVBoxLayout(self.tab_log); log_lo.setContentsMargins(0,10,0,0)
@@ -537,7 +521,7 @@ class NetworkVisualizer(QMainWindow):
         QTimer.singleShot(100, lambda: self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio))
 
     # -----------------------------
-    # YARDIMCI METOTLAR (EVENTS & DRAWING)
+    # YARDIMCI METOTLAR
     # -----------------------------
     def resizeEvent(self, event):
         if hasattr(self, 'view') and hasattr(self, 'scene'): self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
@@ -548,12 +532,10 @@ class NetworkVisualizer(QMainWindow):
         super().showEvent(event)
 
     def redraw_network(self):
-        # Ağı farklı bir rastgele tohumla (seed) tekrar çizer
         self.log.append("Topoloji yeniden yerleştiriliyor..."); self.net.calculate_layout(seed=random.randint(1, 10000))
         self.draw_graph_background(); self.path_items = []; self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatio)
 
     def draw_graph_background(self):
-        # Tüm düğüm ve kenarları (arkaplan) çizer
         self.scene.clear(); self.path_items = []
         if self.net.graph.number_of_nodes() == 0: return
         self.view.setUpdatesEnabled(False)
@@ -570,7 +552,6 @@ class NetworkVisualizer(QMainWindow):
         self.view.setUpdatesEnabled(True)
 
     def draw_path(self, path, color=QColor("#e0af68")):
-        # Bulunan yolu grafik üzerinde parlatarak gösterir
         for item in self.path_items: 
             try: 
                 if item.scene() == self.scene: self.scene.removeItem(item)
@@ -593,20 +574,17 @@ class NetworkVisualizer(QMainWindow):
                 ep = self.net.pos_cache[e]; self.path_items.append(self.scene.addEllipse(ep[0]-node_radius, ep[1]-node_radius, node_radius*2, node_radius*2, QPen(Qt.NoPen), QBrush(QColor("#f7768e"))))
 
     def set_ui_busy(self, busy):
-        # İşlem sırasında butonları kilitler
         for b in [self.btn_run, self.btn_cmp, self.btn_mass]: b.setEnabled(not busy)
         self.pbar.setVisible(busy); 
         if not busy: self.pbar.setValue(0)
 
     def get_weights(self): 
-        # Ağırlık slider değerlerini 0-1 arasına dönüştürür
         return self.slider_w1.value()/100.0, self.slider_w2.value()/100.0, self.slider_w3.value()/100.0
 
     # -----------------------------
-    # İŞLEM BAŞLATMA METOTLARI
+    # İŞLEM BAŞLATMA
     # -----------------------------
     def start_single(self):
-        # Tek bir algoritma için simülasyonu başlatır
         if not AG_AVAILABLE: QMessageBox.critical(self, "Hata", "ag.py eksik!"); return
         self.mode = "Single"; self.set_ui_busy(True); self.tabs.setCurrentIndex(0) 
         self.grp_single_details.setVisible(True); self.grp_compare_table.setVisible(False)
@@ -619,7 +597,6 @@ class NetworkVisualizer(QMainWindow):
         self.worker.start()
 
     def start_compare(self):
-        # Üç algoritmayı da aynı şartlarda çalıştırıp kıyaslar
         if not AG_AVAILABLE: QMessageBox.critical(self, "Hata", "ag.py eksik!"); return
         self.mode = "Compare"; self.set_ui_busy(True); self.comp_data = []; self.tabs.setCurrentIndex(0) 
         self.grp_single_details.setVisible(False); self.grp_compare_table.setVisible(True)
@@ -632,7 +609,6 @@ class NetworkVisualizer(QMainWindow):
         self.worker.start()
 
     def start_mass_experiment(self):
-        # Toplu deney modülünü başlatır
         if not DENEY_AVAILABLE: QMessageBox.critical(self, "Hata", "deney_duzenegi.py bulunamadı."); return
         self.set_ui_busy(True); self.log.clear(); self.tabs.setCurrentIndex(2) 
         self.lbl_status.setText("DENEY ÇALIŞIYOR...")
@@ -649,25 +625,21 @@ class NetworkVisualizer(QMainWindow):
             sb = self.log.verticalScrollBar(); sb.setValue(sb.maximum())
 
     # -----------------------------
-    # SONUÇ İŞLEME VE RAPORLAMA
+    # RAPORLAMA VE SONUÇ İŞLEME
     # -----------------------------
     def finish_mass_experiment(self):
-        # Deney bittiğinde rapor dosyasını bulur ve HTML'e çevirir
         self.set_ui_busy(False)
         self.lbl_status.setText("DENEY TAMAMLANDI")
         self.lbl_status.setStyleSheet("background-color: #24283b; color: #9ece6a; font-weight: 900; font-size: 16px; border-radius: 10px; padding: 15px; border: 2px solid #9ece6a;")
         
         try:
-            # En yeni oluşturulan rapor dosyasını bul
             list_of_files = glob.glob('deney_detay_*.txt') 
             if list_of_files:
                 latest_file = max(list_of_files, key=os.path.getctime)
                 with open(latest_file, "r", encoding="utf-8") as f:
                     raw_content = f.read()
                 
-                # Ham metni HTML formatına dönüştür
                 pretty_html = self.parse_and_format_report(raw_content, latest_file)
-                
                 self.report_viewer.setHtml(pretty_html)
                 self.tabs.setCurrentIndex(1) 
             else:
@@ -681,137 +653,159 @@ class NetworkVisualizer(QMainWindow):
 
     def parse_and_format_report(self, text, filename):
         """
-        Deney düzeneğinden gelen ham metin raporunu, okunabilir HTML formatına çevirir.
+        Ham metin raporunu okur ve özet bir HTML formatına dönüştürür.
+        Detaylı loglar arayüzde gösterilmez, sadece istatistiksel özet sunulur.
         """
         import re
 
-        # CSS Stilleri
+        # --- CSS STİL TANIMLAMALARI ---
         style = """
         <style>
             body { font-family: 'Segoe UI', Consolas, sans-serif; color: #c0caf5; background-color: #1a1c29; }
-            h2 { color: #7aa2f7; border-bottom: 2px solid #3b4261; padding-bottom: 10px; }
-            .meta { color: #565f89; font-size: 12px; margin-bottom: 20px; font-style: italic; }
             
+            /* Rapor Başlığı */
+            .report-header { border-bottom: 2px solid #7aa2f7; padding-bottom: 10px; margin-bottom: 20px; }
+            h2 { color: #7aa2f7; margin: 0; font-size: 20px; }
+            .meta { color: #565f89; font-size: 12px; font-style: italic; margin-top: 5px; }
+
+            /* Deney Kartı */
             .exp-card { 
-                background-color: #24283b; 
-                border: 1px solid #414868; 
-                border-radius: 8px; 
-                padding: 15px; 
-                margin-bottom: 15px; 
+                background-color: #24283b; border: 1px solid #414868; border-radius: 8px; 
+                padding: 10px 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             }
-            .exp-header { font-size: 14px; font-weight: bold; color: #e0af68; margin-bottom: 10px; }
-            
-            table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 12px; }
-            th { background-color: #16161e; color: #7aa2f7; padding: 6px; text-align: left; border-bottom: 1px solid #414868; }
-            td { padding: 8px; border-bottom: 1px solid #2f334d; color: #a9b1d6; vertical-align: top; }
-            
-            .success { color: #9ece6a; font-weight: bold; }
-            .fail { color: #f7768e; font-weight: bold; }
-            .cost { color: #7dcfff; font-family: Consolas; font-weight: bold; }
-            .route { 
-                font-family: Consolas; font-size: 11px; color: #bb9af7; 
-                background-color: #1f2335; padding: 2px 5px; border-radius: 4px;
-                display: inline-block; margin-top: 4px; word-wrap: break-word;
+            .exp-title { font-size: 13px; font-weight: bold; color: #e0af68; margin-bottom: 8px; border-bottom: 1px dashed #414868; padding-bottom: 4px; }
+
+            /* İstatistik Tablosu */
+            table.sum-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 5px; }
+            table.sum-table th { 
+                text-align: left; background-color: #1f2335; color: #7aa2f7; 
+                padding: 6px 8px; border: 1px solid #414868; font-weight: 600;
+            }
+            table.sum-table td { 
+                padding: 6px 8px; border: 1px solid #414868; color: #c0caf5; vertical-align: middle; 
             }
             
-            .summary-box { background-color: #16161e; border: 1px dashed #7aa2f7; padding: 15px; margin-top: 30px; }
+            .algo-name { font-weight: bold; color: #bb9af7; }
+            .val-cost { color: #7dcfff; font-family: Consolas; font-weight: bold; }
+            .val-stats { color: #a9b1d6; font-family: Consolas; font-size: 11px; }
+            .val-success { color: #9ece6a; font-weight: bold; }
+            .val-fail { color: #f7768e; font-weight: bold; }
+            
+            /* Genel Özet Kutusu */
+            .summary-box { background-color: #16161e; border: 1px dashed #7aa2f7; padding: 15px; margin-top: 30px; border-radius: 8px; }
         </style>
         """
 
-        html_out = [style, f"<h2>📄 ANALİZ RAPORU</h2><div class='meta'>Dosya: {filename}</div>"]
+        html_out = [style, f"<div class='report-header'><h2>📄 ÖZET İSTATİSTİK RAPORU</h2><div class='meta'>Tam detaylı veriler dosyada saklıdır: {filename}</div></div>"]
 
         parts = text.split("=== Deney")
         
-        # Başlık Bilgisi
+        # Üst Bilgi (Tarih, Ağırlıklar vb.)
         header_info = parts[0].strip().replace("\n", "<br>")
-        html_out.append(f"<div style='margin-bottom:20px; color:#a9b1d6;'>{header_info}</div>")
+        html_out.append(f"<div style='margin-bottom:20px; color:#a9b1d6; font-size:12px; border:1px solid #2f334d; padding:10px; border-radius:6px;'>{header_info}</div>")
 
+        # Her deney bloğu için döngü
         for part in parts[1:]:
             lines = part.strip().split("\n")
-            title_line = lines[0].strip()
+            title_line = lines[0].strip() # Örn: 01: S=0, D=5...
             
+            # Genel özet bölümü kontrolü
             if "Genel Başarı Özeti" in part:
-                html_out.append("<div class='summary-box'><h3>🏆 GENEL SONUÇLAR</h3>")
+                html_out.append("<div class='summary-box'><h3>GENEL DEĞERLENDİRME</h3>")
                 summary_content = part.split("Genel Başarı Özeti ===")[1].strip().replace("\n", "<br>")
-                html_out.append(f"<div style='font-size:14px; line-height:1.6;'>{summary_content}</div></div>")
+                html_out.append(f"<div style='font-size:13px; line-height:1.6;'>{summary_content}</div></div>")
                 continue
 
-            # Deney Kartı Oluşturma
-            html_out.append(f"<div class='exp-card'><div class='exp-header'>📌 Deney {title_line}</div>")
-            
+            # Deney kartını başlat
+            html_out.append(f"<div class='exp-card'><div class='exp-title'>📌 Deney {title_line}</div>")
+
+            # Tabloyu başlat
             html_out.append("""
-            <table>
+            <table class='sum-table'>
                 <tr>
-                    <th width="20%">Algoritma</th>
-                    <th width="15%">Başarı</th>
-                    <th width="15%">Maliyet</th>
-                    <th width="50%">Detaylar (Süre & Rota)</th>
+                    <th width="15%">Algoritma</th>
+                    <th width="10%">Başarı</th>
+                    <th width="15%">Ort. Süre</th>
+                    <th width="25%">Maliyet (Ort ± Std)</th>
+                    <th width="20%">En İyi - En Kötü</th>
+                    <th width="15%">Durum</th>
                 </tr>
             """)
 
-            buffer_lines = lines[1:]
-            i = 0
-            while i < len(buffer_lines):
-                line = buffer_lines[i].strip()
+            # Algoritma satırlarını işleyen yardımcı fonksiyon
+            def render_algo_row(block_lines):
+                if not block_lines: return ""
                 
-                if line.startswith("["):
-                    algo_name = line.split("]")[0].replace("[", "")
-                    success_rate = "N/A"
-                    avg_cost = "-"
-                    
-                    # Başarı ve Maliyet Verisini Çekme
-                    if "Başarı:" in line:
-                        parts_line = line.split("|")
-                        success_rate = parts_line[0].split("Başarı:")[1].strip()
-                        if "Avg Cost:" in parts_line[1]:
-                            avg_cost = parts_line[1].split("Avg Cost:")[1].strip()
+                header_line = block_lines[0] # [GA] ...
+                if not header_line.startswith("["): return ""
+                
+                name = header_line.split("]")[0].replace("[", "").upper()
+                
+                # Başarı Oranını Ayrıştır
+                success_rate = "N/A"
+                if "Başarı:" in header_line:
+                    success_rate = header_line.split("Başarı:")[1].split("|")[0].strip()
 
-                    time_info = "-"
-                    route_info = "-"
+                # İstatistikleri Ayrıştır
+                avg_time = "-"
+                cost_avg_std = "-"
+                cost_best_worst = "-"
+                status_note = "<span style='color:#9ece6a'>Uygun</span>"
+
+                for l in block_lines:
+                    # Süre
+                    if "Süre (sn)" in l and "Ortalama:" in l:
+                        t_val = l.split("Ortalama:")[1].split(",")[0].strip()
+                        avg_time = f"{float(t_val):.4f}s"
                     
-                    # Sonraki satırlarda süre ve rota bilgisini arama
-                    for k in range(1, 6):
-                        if i + k >= len(buffer_lines): break
-                        next_line = buffer_lines[i+k].strip()
+                    # Maliyet İstatistikleri
+                    if "Maliyet ->" in l and "Ortalama:" in l:
+                        parts_c = l.split(",")
+                        avg_c = parts_c[0].split(":")[1].strip()
+                        std_c = parts_c[1].split(":")[1].strip()
+                        best_c = parts_c[2].split(":")[1].strip()
+                        worst_c = parts_c[3].split(":")[1].strip()
                         
-                        if "Süre (sn)" in next_line and "Ortalama:" in next_line:
-                            try:
-                                time_val = next_line.split("Ortalama:")[1].split(",")[0].strip()
-                                time_info = f"{float(time_val):.4f}s"
-                            except: pass
-                        
-                        if "En iyi rota:" in next_line:
-                            route_raw = next_line.split("En iyi rota:")[1].strip()
-                            if route_raw and route_raw != "None":
-                                if len(route_raw) > 60:
-                                    route_info = route_raw[:60] + "..."
-                                else:
-                                    route_info = route_raw
-                            else:
-                                route_info = "Rota Yok"
+                        cost_avg_std = f"{avg_c} ± {std_c}"
+                        cost_best_worst = f"{best_c} - {worst_c}"
 
-                    status_class = "success" if "0/" not in success_rate else "fail"
-                    
-                    html_out.append(f"""
-                    <tr>
-                        <td style='font-weight:bold; color:#bb9af7;'>{algo_name}</td>
-                        <td class='{status_class}'>{success_rate}</td>
-                        <td class='cost'>{avg_cost}</td>
-                        <td>
-                            <span style='color:#73daca;'>⏱️ {time_info}</span><br>
-                            <div class='route'>🛣️ {route_info}</div>
-                        </td>
-                    </tr>
-                    """)
-                i += 1
+                    # Başarısızlık Kontrolü
+                    if "Başarısız denemeler" in l:
+                        status_note = "<span class='val-fail'>Hatalı</span>"
 
-            html_out.append("</table></div>")
+                # Başarı durumuna göre renklendirme
+                s_class = "val-success" if "0/" not in success_rate else "val-fail"
+
+                return f"""
+                <tr>
+                    <td class='algo-name'>{name}</td>
+                    <td class='{s_class}'>{success_rate}</td>
+                    <td>{avg_time}</td>
+                    <td class='val-cost'>{cost_avg_std}</td>
+                    <td class='val-stats'>{cost_best_worst}</td>
+                    <td>{status_note}</td>
+                </tr>
+                """
+
+            # Satır satır okuyarak algoritmaları ayıkla
+            buffer = []
+            for line in lines[1:]:
+                sline = line.strip()
+                if sline.startswith("["):
+                    if buffer: html_out.append(render_algo_row(buffer))
+                    buffer = [sline]
+                else:
+                    buffer.append(sline)
+            
+            # Son tamponu işle
+            if buffer: html_out.append(render_algo_row(buffer))
+
+            html_out.append("</table></div>") # Tablo ve kartı kapat
 
         return "\n".join(html_out)
 
     @Slot(str, object, object, float)
     def handle_result(self, algo, path, metrics, duration):
-        # İş parçacığından (Thread) gelen sonuçları arayüze yansıtır
         w1, w2, w3 = self.get_weights(); cost = 0.0
         if path: cost = (w1*metrics.get('delay',0)) + (w2*metrics.get('rel_cost',0)*100) + (w3*metrics.get('res_cost',0))
         self.log.append(f"{algo}: Maliyet={cost:.2f} ({duration:.2f}s)")
@@ -837,7 +831,6 @@ class NetworkVisualizer(QMainWindow):
             self.comp_data.append({'name': algo, 'path': path, 'metrics': metrics, 'time': duration, 'cost': cost})
 
     def finish_compare(self):
-        # Karşılaştırma modu bittiğinde kazananı belirler ve tabloyu doldurur
         self.set_ui_busy(False)
         valid = [x for x in self.comp_data if x['path']]
         if not valid: 
@@ -856,7 +849,6 @@ class NetworkVisualizer(QMainWindow):
             item_cost = QTableWidgetItem(f"{res['cost']:.2f}")
             item_time = QTableWidgetItem(f"{res['time']:.4f}s")
             
-            # Kazananı yeşil ve kalın font ile göster
             if i == 0:
                 for it in [item_name, item_cost, item_time]:
                     it.setForeground(QBrush(QColor("#9ece6a"))); it.setFont(QFont("Consolas", 9, QFont.Bold))

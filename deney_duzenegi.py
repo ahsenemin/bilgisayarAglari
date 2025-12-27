@@ -1,22 +1,22 @@
 # =====================================================
 # GEREKLİ KÜTÜPHANELER
 # =====================================================
-import argparse                  # Komut satırı argümanları için
+import argparse                  # Komut satırı argüman yönetimi
 import math                      # Matematiksel işlemler
 import random                    # Rastgele sayı üretimi
-import statistics                # İstatistiksel hesaplamalar (ortalama, std sapma)
+import statistics                # İstatistiksel hesaplamalar
 import time                      # Zaman ölçümü
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional, Sequence, Tuple
-import concurrent.futures        # Paralel işlem (Multiprocessing) için
-import pandas as pd              # Veri okuma işlemleri (CSV)
+import concurrent.futures        # Paralel işlem (Multiprocessing)
+import pandas as pd              # CSV veri okuma işlemleri
 
 # =====================================================
-# PROJE MODÜLLERİ
+# PROJE MODÜLLERİ VE KONTROLLERİ
 # =====================================================
 try:
-    from ag import G  # Ağ topolojisi (NetworkX Graph nesnesi)
+    from ag import G  # Ağ topolojisi (NetworkX nesnesi)
     from genetik_proje import GenetikAlgoritma
     from karinca import ACORouting
     from q_learning import (
@@ -32,11 +32,11 @@ except ImportError as e:
 # =====================================================
 # SABİTLER VE AYARLAR
 # =====================================================
-DEFAULT_WEIGHTS = [0.4, 0.4, 0.2]  # Varsayılan [Gecikme, Güvenilirlik, Kaynak] ağırlıkları
+DEFAULT_WEIGHTS = [0.4, 0.4, 0.2]  # [Gecikme, Güvenilirlik, Kaynak]
 DEMAND_FILE = "BSM307_317_Guz2025_TermProject_DemandData.csv"
 RELIABILITY_SCALE = 100.0
 
-# Q-Learning performansını artırmak için komşuluk listesi önbelleğe alınır
+# Q-Learning için komşuluk listesi önbelleği (Performans için)
 QL_NEIGHBORS = {n: list(G.neighbors(n)) for n in G.nodes()}
 
 # =====================================================
@@ -57,6 +57,7 @@ class RunRecord:
 # =====================================================
 # 1. YARDIMCI FONKSİYONLAR
 # =====================================================
+
 def normalize_weight_list(weights: Sequence[float]) -> List[float]:
     """Ağırlıkları toplamı 1 olacak şekilde normalize eder."""
     total = sum(weights)
@@ -80,8 +81,7 @@ def load_demands(csv_path: str, count: int, offset: int) -> List[Tuple[int, int,
 
 def evaluate_path(graph, path: Optional[Sequence[int]], bandwidth_req: float, weights: Sequence[float]) -> RunRecord:
     """
-    Bulunan yolun QoS metriklerini (Gecikme, Güvenilirlik, Maliyet) hesaplar ve
-    bant genişliği kısıtlamasını sağlayıp sağlamadığını kontrol eder.
+    Bulunan yolun QoS metriklerini hesaplar ve kısıtlamaları (Bant Genişliği) kontrol eder.
     """
     if not path or len(path) < 2:
         return RunRecord(run_id=0, success=False, reason="Algoritma geçerli bir rota döndürmedi.", duration=0.0)
@@ -95,20 +95,17 @@ def evaluate_path(graph, path: Optional[Sequence[int]], bandwidth_req: float, we
     for idx, node in enumerate(path):
         node_data = graph.nodes[node]
         rel = float(node_data.get("reliability", 0.99))
-        
-        # Logaritmik güvenilirlik toplamı (Çarpım işlemini toplama çevirmek için)
         log_reliability_cost += -math.log(rel if rel > 1e-6 else 1e-6)
         
-        # Başlangıç ve bitiş düğümleri hariç işlem gecikmesi eklenir
+        # Başlangıç ve bitiş hariç işlem gecikmesi
         if idx != 0 and idx != len(path) - 1:
             total_delay += float(node_data.get("processing_delay", 0.0))
 
     # Kenar (Edge) Maliyetleri
     for u, v in zip(path[:-1], path[1:]):
         if not graph.has_edge(u, v):
-            return RunRecord(
-                run_id=0, success=False, reason=f"Rota hatalı kenar içeriyor: ({u}, {v}) grafikte yok.", duration=0.0
-            )
+            return RunRecord(run_id=0, success=False, reason=f"Hatalı kenar: ({u}, {v}) grafikte yok.", duration=0.0)
+        
         edge = graph.edges[u, v]
         total_delay += float(edge.get("delay", 0.0))
         
@@ -130,7 +127,7 @@ def evaluate_path(graph, path: Optional[Sequence[int]], bandwidth_req: float, we
     success = bottleneck >= bandwidth_req
     reason = None
     if not success:
-        reason = f"Minimum bant genişliği {bottleneck:.2f} Mbps < talep {bandwidth_req:.2f} Mbps"
+        reason = f"Yetersiz bant genişliği ({bottleneck:.2f} < {bandwidth_req:.2f})"
 
     metrics = {
         "delay_ms": total_delay,
@@ -145,18 +142,15 @@ def evaluate_path(graph, path: Optional[Sequence[int]], bandwidth_req: float, we
     return RunRecord(run_id=0, success=success, reason=reason, duration=0.0, path=list(path), metrics=metrics)
 
 def summarize_runs(records: List[RunRecord]) -> Dict[str, Optional[float]]:
-    """Bir algoritmanın tüm tekrarları için istatistiksel özet çıkarır."""
+    """Algoritma tekrarlarının istatistiksel özetini çıkarır."""
     success_records = [r for r in records if r.success and r.metrics]
     base = {
         "attempts": len(records),
         "success_count": len(success_records),
         "failure_count": len(records) - len(success_records),
-        "avg_cost": None,
-        "std_cost": None,
-        "best_cost": None,
-        "worst_cost": None,
-        "best_path": None,
-        "worst_path": None,
+        "avg_cost": None, "std_cost": None,
+        "best_cost": None, "worst_cost": None,
+        "best_path": None, "worst_path": None,
         "avg_time": statistics.mean(r.duration for r in records) if records else None,
         "best_time": min((r.duration for r in records), default=None),
         "worst_time": max((r.duration for r in records), default=None),
@@ -177,7 +171,7 @@ def summarize_runs(records: List[RunRecord]) -> Dict[str, Optional[float]]:
     return base
 
 # =====================================================
-# 2. PARALEL İŞLEM MOTORU
+# 2. PARALEL İŞLEM MOTORU (WORKER)
 # =====================================================
 def run_single_experiment_batch(
     idx: int,
@@ -186,20 +180,18 @@ def run_single_experiment_batch(
     repeats: int,
     weights: List[float],
     seed: Optional[int],
-    # Genetik Algoritma Parametreleri
+    # GA Parametreleri
     ga_pop: int, ga_generations: int, ga_mutation: float,
     # ACO Parametreleri
     aco_ants: int, aco_iterations: int, aco_alpha: float, aco_beta: float, aco_evap: float, aco_q: float,
-    # Q-Learning Parametreleri
+    # QL Parametreleri
     ql_episodes: int, ql_alpha: float, ql_gamma: float, ql_max_steps: int, 
     ql_eps_start: float, ql_eps_end: float, ql_decay: int
 ):
     """
-    Tek bir talep (Source-Dest-Bandwidth) kombinasyonu için seçilen algoritmaları çalıştırır.
-    Bu fonksiyon ayrı bir işlem (process) içinde çalıştırılır.
+    Tek bir talep (S, D, BW) için seçilen tüm algoritmaları belirtilen tekrar sayısı kadar çalıştırır.
+    Bu fonksiyon Multiprocessing havuzunda ayrı bir işlem olarak çalışır.
     """
-    
-    # Deterministik sonuçlar için işlem bazlı rastgelelik tohumu (seed) atanır
     if seed is not None:
         random.seed(seed)
     
@@ -217,13 +209,10 @@ def run_single_experiment_batch(
                 )
                 best_path, raw_score, duration = ga.calistir()
                 evaluation = evaluate_path(G, best_path, bandwidth, weights)
-                evaluation.run_id = run_idx
-                evaluation.duration = duration
-                evaluation.raw_score = raw_score
+                evaluation.run_id = run_idx; evaluation.duration = duration; evaluation.raw_score = raw_score
                 records.append(evaluation)
             except Exception as exc:
-                records.append(RunRecord(run_id=run_idx, success=False, reason=f"Genetik algoritma hatası: {exc}", duration=0.0))
-        
+                records.append(RunRecord(run_id=run_idx, success=False, reason=f"GA Hatası: {exc}", duration=0.0))
         algo_records["ga"] = records
         summaries["ga"] = summarize_runs(records)
 
@@ -241,13 +230,10 @@ def run_single_experiment_batch(
                 path, fitness, _ = aco.solve()
                 duration = time.perf_counter() - start
                 evaluation = evaluate_path(G, path, bandwidth, weights)
-                evaluation.run_id = run_idx
-                evaluation.duration = duration
-                evaluation.raw_score = fitness
+                evaluation.run_id = run_idx; evaluation.duration = duration; evaluation.raw_score = fitness
                 records.append(evaluation)
             except Exception as exc:
-                records.append(RunRecord(run_id=run_idx, success=False, reason=f"ACO çalıştırma hatası: {exc}", duration=0.0))
-        
+                records.append(RunRecord(run_id=run_idx, success=False, reason=f"ACO Hatası: {exc}", duration=0.0))
         algo_records["aco"] = records
         summaries["aco"] = summarize_runs(records)
 
@@ -256,7 +242,6 @@ def run_single_experiment_batch(
         records: List[RunRecord] = []
         q_weights = ql_normalize_weights(weights[0], weights[1], weights[2])
         reward_fn = make_reward_fn(q_weights, demand_mbps=bandwidth)
-
         for run_idx in range(1, repeats + 1):
             try:
                 start = time.perf_counter()
@@ -272,19 +257,17 @@ def run_single_experiment_batch(
                 duration = time.perf_counter() - start
                 path = ql_greedy_path(q_table, QL_NEIGHBORS, source, dest)
                 evaluation = evaluate_path(G, path, bandwidth, weights)
-                evaluation.run_id = run_idx
-                evaluation.duration = duration
+                evaluation.run_id = run_idx; evaluation.duration = duration
                 records.append(evaluation)
             except Exception as exc:
-                records.append(RunRecord(run_id=run_idx, success=False, reason=f"Q-learning hatası: {exc}", duration=0.0))
-        
+                records.append(RunRecord(run_id=run_idx, success=False, reason=f"QL Hatası: {exc}", duration=0.0))
         algo_records["qlearning"] = records
         summaries["qlearning"] = summarize_runs(records)
 
     return idx, combo, summaries, algo_records
 
 # =====================================================
-# 3. RAPORLAMA
+# 3. RAPORLAMA MODÜLÜ
 # =====================================================
 def build_report_section(
     case_idx: int,
@@ -292,26 +275,33 @@ def build_report_section(
     summaries: Dict[str, Dict[str, Optional[float]]],
     records: Dict[str, List[RunRecord]],
 ) -> List[str]:
-    """Her deney kombinasyonu için metin tabanlı rapor bloğu oluşturur."""
+    """Her deney durumu için metin tabanlı, detaylı rapor bloğu oluşturur."""
     lines = []
     source, dest, bandwidth = combo
     lines.append(f"\n=== Deney {case_idx:02d}: S={source}, D={dest}, B={bandwidth:.2f} Mbps ===")
     
-    for algo_name, summary in summaries.items():
-        # Başarı Oranı ve Maliyet
+    # Algoritmaları ortalama maliyete göre sırala (Kazananı belirlemek için)
+    sorted_algos = []
+    for name, data in summaries.items():
+        cost = data.get("avg_cost")
+        if cost is None: cost = float('inf')
+        sorted_algos.append((name, data, cost))
+    sorted_algos.sort(key=lambda x: x[2])
+
+    for rank, (algo_name, summary, cost_val) in enumerate(sorted_algos, start=1):
         cost_str = f"{summary['avg_cost']:.4f}" if summary["avg_cost"] is not None else "---"
+        winner_badge = " [🏆 KAZANAN]" if rank == 1 and summary["avg_cost"] is not None else ""
+        
         lines.append(
-            f"\n[{algo_name}] Başarı: {summary['success_count']}/{summary['attempts']} | "
+            f"\n[{algo_name}]{winner_badge} Başarı: {summary['success_count']}/{summary['attempts']} | "
             f"Avg Cost: {cost_str}"
         )
         
-        # Zaman İstatistikleri
+        # Süre ve Rota Bilgileri
         if summary["avg_time"] is not None:
             lines.append(
                 f"   Süre (sn) -> Ortalama: {summary['avg_time']:.4f}, En iyi: {summary['best_time']:.4f}, En kötü: {summary['worst_time']:.4f}"
             )
-        
-        # Maliyet İstatistikleri ve Rota
         if summary["avg_cost"] is not None:
             lines.append(
                 f"   Maliyet -> Ortalama: {summary['avg_cost']:.4f}, Std: {summary['std_cost']:.4f}, "
@@ -319,19 +309,20 @@ def build_report_section(
             )
             lines.append(f"   En iyi rota: {summary['best_path']}")
         
-        # Hatalar
+        # Hata ve Detaylı Çalışma Kayıtları
         if summary["failures"]:
             lines.append("   Başarısız denemeler:")
             for fail in summary["failures"]:
                 lines.append(f"      · Tekrar {fail['run']}: {fail['reason']}")
-        else:
-            lines.append("   Başarısız deneme yok.")
 
-        # Detaylı Log
-        for rec in records[algo_name]:
-            if rec.success and rec.metrics:
+        # Tekrarları maliyete göre sıralayıp listeleme
+        if algo_name in records:
+            valid_runs = [r for r in records[algo_name] if r.success and r.metrics]
+            valid_runs.sort(key=lambda r: r.metrics['weighted_cost'])
+
+            for i, rec in enumerate(valid_runs, start=1):
                 lines.append(
-                    f"      -> Tekrar {rec.run_id}: Delay={rec.metrics['delay_ms']:.2f} ms | "
+                    f"      -> #{i} (Tekrar {rec.run_id}): Delay={rec.metrics['delay_ms']:.2f} ms | "
                     f"Rel={rec.metrics['reliability']:.5f} | Bottleneck={rec.metrics['bottleneck_mbps']:.2f} Mbps | "
                     f"Maliyet={rec.metrics['weighted_cost']:.4f}"
                 )
@@ -341,19 +332,18 @@ def build_report_section(
 # 4. ANA PROGRAM (MAIN)
 # =====================================================
 def main():
-    parser = argparse.ArgumentParser(
-        description="BSM307 ağ rotalama algoritmalarını otomatik deney düzeneğinde kıyaslar."
-    )
-    # Temel Ayarlar
-    parser.add_argument("--repeats", type=int, default=5, help="Her kombinasyon için algoritma tekrar sayısı.")
-    parser.add_argument("--demands", type=int, default=20, help="Demand dosyasından kaç adet (S,D,B) alınacak.")
-    parser.add_argument("--demand-offset", type=int, default=0, help="Demand dosyasında başlanacak satır indexi.")
-    parser.add_argument("--weights", type=float, nargs=3, default=DEFAULT_WEIGHTS, metavar=("W_DELAY", "W_REL", "W_RES"))
-    parser.add_argument("--algorithms", nargs="+", default=["ga", "aco", "qlearning"], choices=["ga", "aco", "qlearning"])
-    parser.add_argument("--output", type=str, default=None, help="Raporun kaydedileceği dosya adı.")
-    parser.add_argument("--demand-file", type=str, default=DEMAND_FILE, help="Demand CSV dosyası yolu.")
+    parser = argparse.ArgumentParser(description="BSM307 Rotalama Algoritmaları - Toplu Deney Düzeneği")
     
-    # Algoritma Hiperparametreleri (İsteğe Bağlı)
+    # Temel Ayarlar
+    parser.add_argument("--repeats", type=int, default=5, help="Her algoritma için tekrar sayısı")
+    parser.add_argument("--demands", type=int, default=20, help="Çalıştırılacak talep (demand) sayısı")
+    parser.add_argument("--demand-offset", type=int, default=0, help="CSV'de başlanacak satır")
+    parser.add_argument("--weights", type=float, nargs=3, default=DEFAULT_WEIGHTS, help="Ağırlıklar: Delay Rel Resource")
+    parser.add_argument("--algorithms", nargs="+", default=["ga", "aco", "qlearning"], choices=["ga", "aco", "qlearning"])
+    parser.add_argument("--output", type=str, default=None, help="Çıktı rapor dosyası adı")
+    parser.add_argument("--demand-file", type=str, default=DEMAND_FILE, help="Talep verisi CSV yolu")
+    
+    # Algoritma Hiperparametreleri
     parser.add_argument("--ga-pop", type=int, default=100)
     parser.add_argument("--ga-generations", type=int, default=200)
     parser.add_argument("--ga-mutation", type=float, default=0.1)
@@ -370,37 +360,35 @@ def main():
     parser.add_argument("--ql-epsilon-start", type=float, default=1.0)
     parser.add_argument("--ql-epsilon-end", type=float, default=0.05)
     parser.add_argument("--ql-epsilon-decay", type=int, default=2000)
-    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--seed", type=int, default=None, help="Rastgelelik tohumu (Seed)")
+    
     args = parser.parse_args()
 
-    # Tekrarlanabilirlik için ana seed belirleyici
+    # Rastgelelik tohumunu ayarla
     seed_generator = random.Random(args.seed) if args.seed is not None else random.Random()
-    
     weights = normalize_weight_list(args.weights)
+    
+    # Talepleri Yükle
     combos = load_demands(args.demand_file, args.demands, args.demand_offset)
     if len(combos) < args.demands:
-        print(f"⚠️  Demand dosyasında {args.demands} adet kayıt bulunamadı. {len(combos)} adet kombinasyon çalıştırılacak.")
+        print(f"⚠️  Demand dosyasında {args.demands} adet kayıt bulunamadı. {len(combos)} adet çalıştırılacak.")
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_path = args.output or f"deney_detay_{timestamp}.txt"
 
-    # Rapor Başlığı
+    # Rapor Başlığını Oluştur
     overall_report: List[str] = []
     overall_report.append(f"Deney Tarihi: {timestamp}")
     overall_report.append(f"Kullanılan ağırlıklar (normalize): {weights}")
-    overall_report.append(
-        f"Algoritmalar: {', '.join(args.algorithms)} | Demand kayıt sayısı: {len(combos)} | Tekrar sayısı: {args.repeats}"
-    )
+    overall_report.append(f"Algoritmalar: {', '.join(args.algorithms)} | Kayıt: {len(combos)} | Tekrar: {args.repeats}")
     overall_report.append(f"Mod: Yüksek Performans (Parallel Execution)")
 
-    print(f"🚀 Deney başlatılıyor... {len(combos)} kombinasyon, Çoklu İşlem (Multiprocessing) kullanılıyor.")
+    print(f"🚀 Deney başlatılıyor... {len(combos)} kombinasyon, Multiprocessing aktif.")
     
-    # Görev listesini hazırlar
+    # Görev listesini hazırla
     tasks = []
     for idx, combo in enumerate(combos, start=1):
-        # Her görev için ayrı bir rastgele seed üret
         task_seed = seed_generator.randint(0, 2**32 - 1) if args.seed is not None else None
-        
         tasks.append((
             idx, combo, args.algorithms, args.repeats, weights, task_seed,
             args.ga_pop, args.ga_generations, args.ga_mutation,
@@ -412,7 +400,7 @@ def main():
     overall_summaries: Dict[str, List[int]] = {algo: [] for algo in args.algorithms}
     results_buffer = []
 
-    # Paralel İşlem Başlatma
+    # Paralel Çalıştırma Başlat
     with concurrent.futures.ProcessPoolExecutor() as executor:
         futures = {executor.submit(run_single_experiment_batch, *task): task[0] for task in tasks}
         
@@ -422,19 +410,17 @@ def main():
             try:
                 res_idx, res_combo, res_summaries, res_records = future.result()
                 results_buffer.append((res_idx, res_combo, res_summaries, res_records))
-                
                 completed_count += 1
                 print(f"✅ [{completed_count}/{len(combos)}] Tamamlandı: Deney {res_idx} (S={res_combo[0]}, D={res_combo[1]})")
-                
             except Exception as e:
                 print(f"❌ Hata oluştu Deney {idx}: {e}")
 
-    # Sonuçları indeks sırasına göre sırala
+    # Sonuçları sıraya diz
     results_buffer.sort(key=lambda x: x[0])
 
-    # Raporu Oluştur
     readable_names = {"ga": "Genetik Algoritma", "aco": "Karınca Kolonisi", "qlearning": "Q-Learning"}
     
+    # Raporu Derle
     for idx, combo, summaries, algo_records in results_buffer:
         for algo in args.algorithms:
             if algo in summaries:
@@ -444,7 +430,7 @@ def main():
         readable_records = {readable_names.get(k, k): v for k, v in algo_records.items()}
         overall_report.extend(build_report_section(idx, combo, readable_summaries, readable_records))
 
-    # Özet Bölümü
+    # Genel Özet Ekle
     overall_report.append("\n=== Genel Başarı Özeti ===")
     for algo in args.algorithms:
         success_counts = overall_summaries[algo]
@@ -454,7 +440,7 @@ def main():
             f"{algo.upper()}: {fully_successful}/{total_cases} kombinasyonda en az bir geçerli rota bulundu."
         )
 
-    # Dosyaya Yazma
+    # Dosyaya Kaydet
     report_text = "\n".join(overall_report)
     print("\nDeney raporu oluşturuldu. Kaydediliyor...")
     with open(output_path, "w", encoding="utf-8") as f:
