@@ -9,6 +9,11 @@ import math                      # Matematiksel işlemler (log, exp)
 import time                      # Algoritmanın çalışma süresini ölçmek
 import statistics                # Ortalama, standart sapma vb.
 
+def set_seed(seed: int | None):
+    if seed is None:
+        return
+    random.seed(seed)
+
 # =====================================================
 # 1. VERİ YÜKLEME VE NETWORK GRAPH OLUŞTURMA
 # =====================================================
@@ -117,14 +122,14 @@ def calculate_fitness(metrics, weights):
 class ACORouting:
     def __init__(self, graph, source, destination, required_bandwidth,
                  weights, n_ants=20, n_iterations=50,
-                 alpha=1.0, beta=2.0, evaporation=0.5, Q=100):
+                 alpha=1.0, beta=2.0, evaporation=0.5, Q=100, seed= None):
 
         self.G = graph                  # Ağ
         self.source = source            # Başlangıç düğümü
         self.dest = destination         # Hedef düğüm
         self.B = required_bandwidth     # Minimum bant genişliği
         self.weights = weights          # Maliyet ağırlıkları
-
+        
         self.n_ants = n_ants            # Karınca sayısı
         self.n_iterations = n_iterations# Iterasyon sayısı
         self.alpha = alpha              # Feromon etkisi
@@ -135,7 +140,7 @@ class ACORouting:
         # Tüm kenarlara başlangıç feromonu atanır
         self.pheromones = {edge: 1.0 for edge in self.G.edges()}
         self.history = []               # Yakınsama geçmişi
-
+        set_seed(seed)                  # Rastgelelik için seed ayarlanır
     # -----------------------------
     # FEROMON DEĞERİNİ OKUMA
     # -----------------------------
@@ -345,6 +350,7 @@ def run_application(G):
 # PROGRAM BAŞLANGICI
 # =====================================================
 if __name__ == "__main__":
+    random.seed(SEED)
     G = create_network_graph()
     if G:
         run_application(G)

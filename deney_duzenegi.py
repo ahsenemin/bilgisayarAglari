@@ -43,16 +43,18 @@ QL_NEIGHBORS = {n: list(G.neighbors(n)) for n in G.nodes()}
 # VERİ YAPILARI
 # =====================================================
 @dataclass
+
 class RunRecord:
-    """Tek bir algoritma çalıştırma sonucunu tutan veri yapısı."""
     run_id: int
     success: bool
     reason: Optional[str]
     duration: float
+    seed: Optional[int] = None   
     path: Optional[List[int]] = None
     metrics: Optional[Dict[str, float]] = None
     raw_score: Optional[float] = None
     extra: Dict[str, float] = field(default_factory=dict)
+
 
 # =====================================================
 # 1. YARDIMCI FONKSİYONLAR
@@ -173,7 +175,9 @@ def summarize_runs(records: List[RunRecord]) -> Dict[str, Optional[float]]:
 # =====================================================
 # 2. PARALEL İŞLEM MOTORU (WORKER)
 # =====================================================
+
 def run_single_experiment_batch(
+    
     idx: int,
     combo: Tuple[int, int, float],
     algorithms: List[str],
@@ -186,85 +190,141 @@ def run_single_experiment_batch(
     aco_ants: int, aco_iterations: int, aco_alpha: float, aco_beta: float, aco_evap: float, aco_q: float,
     # QL Parametreleri
     ql_episodes: int, ql_alpha: float, ql_gamma: float, ql_max_steps: int, 
-    ql_eps_start: float, ql_eps_end: float, ql_decay: int
+    ql_eps_start: float, ql_eps_end: float, ql_decay: int,
 ):
+    base_seed = seed
     """
     Tek bir talep (S, D, BW) için seçilen tüm algoritmaları belirtilen tekrar sayısı kadar çalıştırır.
     Bu fonksiyon Multiprocessing havuzunda ayrı bir işlem olarak çalışır.
     """
-    if seed is not None:
-        random.seed(seed)
-    
     source, dest, bandwidth = combo
     algo_records: Dict[str, List[RunRecord]] = {}
     summaries: Dict[str, Dict[str, Optional[float]]] = {}
-    
-    # --- 1. Genetik Algoritma (GA) ---
-    if "ga" in algorithms:
-        records: List[RunRecord] = []
-        for run_idx in range(1, repeats + 1):
-            try:
-                ga = GenetikAlgoritma(
-                    G, source, dest, pop_size=ga_pop, mutasyon_orani=ga_mutation, nesil=ga_generations, agirliklar=weights
-                )
-                best_path, raw_score, duration = ga.calistir()
-                evaluation = evaluate_path(G, best_path, bandwidth, weights)
-                evaluation.run_id = run_idx; evaluation.duration = duration; evaluation.raw_score = raw_score
-                records.append(evaluation)
-            except Exception as exc:
-                records.append(RunRecord(run_id=run_idx, success=False, reason=f"GA Hatası: {exc}", duration=0.0))
-        algo_records["ga"] = records
-        summaries["ga"] = summarize_runs(records)
 
-    # --- 2. Karınca Kolonisi (ACO) ---
-    if "aco" in algorithms:
-        records: List[RunRecord] = []
-        for run_idx in range(1, repeats + 1):
+    try:
+        # seed
+        if seed is not None:
+            random.seed(seed)
             try:
-                start = time.perf_counter()
-                aco = ACORouting(
-                    G, source, dest, bandwidth, weights,
-                    n_ants=aco_ants, n_iterations=aco_iterations,
-                    alpha=aco_alpha, beta=aco_beta, evaporation=aco_evap, Q=aco_q
-                )
-                path, fitness, _ = aco.solve()
-                duration = time.perf_counter() - start
-                evaluation = evaluate_path(G, path, bandwidth, weights)
-                evaluation.run_id = run_idx; evaluation.duration = duration; evaluation.raw_score = fitness
-                records.append(evaluation)
-            except Exception as exc:
-                records.append(RunRecord(run_id=run_idx, success=False, reason=f"ACO Hatası: {exc}", duration=0.0))
-        algo_records["aco"] = records
-        summaries["aco"] = summarize_runs(records)
+                import numpy as np
+                np.random.seed(seed)
+            except Exception:
+                pass
 
-    # --- 3. Q-Learning (RL) ---
-    if "qlearning" in algorithms:
-        records: List[RunRecord] = []
-        q_weights = ql_normalize_weights(weights[0], weights[1], weights[2])
-        reward_fn = make_reward_fn(q_weights, demand_mbps=bandwidth)
-        for run_idx in range(1, repeats + 1):
-            try:
-                start = time.perf_counter()
-                q_table = ql_train(
-                    G, QL_NEIGHBORS,
-                    start_node=source, goal_node=dest,
-                    reward_fn=reward_fn, episodes=ql_episodes,
-                    alpha=ql_alpha, gamma=ql_gamma,
-                    epsilon_start=ql_eps_start, epsilon_end=ql_eps_end,
-                    epsilon_decay_steps=ql_decay, max_steps_per_episode=ql_max_steps,
-                    stochastic_fail=False,
-                )
-                duration = time.perf_counter() - start
-                path = ql_greedy_path(q_table, QL_NEIGHBORS, source, dest)
-                evaluation = evaluate_path(G, path, bandwidth, weights)
-                evaluation.run_id = run_idx; evaluation.duration = duration
-                records.append(evaluation)
-            except Exception as exc:
-                records.append(RunRecord(run_id=run_idx, success=False, reason=f"QL Hatası: {exc}", duration=0.0))
-        algo_records["qlearning"] = records
-        summaries["qlearning"] = summarize_runs(records)
+        # --- GA ---
+        if "ga" in algorithms:
+            records: List[RunRecord] = []
+            for run_idx in range(1, repeats + 1):
+                try:
+                    run_seed = None
+                    # (opsiyonel) her tekrar farklı seed
+                    if base_seed is not None:
+                        run_seed = (base_seed + 1009 * run_idx) % (2**32 - 1)
+                        random.seed(run_seed)
 
-    return idx, combo, summaries, algo_records
+                    ga = GenetikAlgoritma(G, source, dest,
+                                          pop_size=ga_pop,
+                                          mutasyon_orani=ga_mutation,
+                                          nesil=ga_generations,
+                                          agirliklar=weights,
+                                          min_bw=bandwidth, seed=run_seed)
+                    best_path, raw_score, duration = ga.calistir()
+                    evaluation = evaluate_path(G, best_path, bandwidth, weights)
+                    evaluation.run_id = run_idx
+                    evaluation.duration = duration
+                    evaluation.raw_score = raw_score
+                    evaluation.seed = run_seed   
+                    records.append(evaluation)
+                except Exception as exc:
+                    records.append(RunRecord(run_id=run_idx, success=False,
+                                             reason=f"GA Hatası: {exc}", duration=0.0))
+            algo_records["ga"] = records
+            summaries["ga"] = summarize_runs(records)
+
+        # --- ACO ---
+        if "aco" in algorithms:
+            records: List[RunRecord] = []
+            for run_idx in range(1, repeats + 1):
+                try:
+                    run_seed = None
+                    if base_seed is not None:
+                        run_seed = (base_seed + 2003 * run_idx) % (2**32 - 1)
+                        random.seed(run_seed)
+
+                    start = time.perf_counter()
+                    aco = ACORouting(G, source, dest, bandwidth, weights,
+                                     n_ants=aco_ants, n_iterations=aco_iterations,
+                                     alpha=aco_alpha, beta=aco_beta,
+                                     evaporation=aco_evap, Q=aco_q)
+                    path, fitness, _ = aco.solve()
+                    duration = time.perf_counter() - start
+
+                    evaluation = evaluate_path(G, path, bandwidth, weights)
+                    evaluation.run_id = run_idx
+                    evaluation.duration = duration
+                    evaluation.raw_score = fitness
+                    evaluation.seed = run_seed
+                    records.append(evaluation)
+                except Exception as exc:
+                    records.append(RunRecord(run_id=run_idx, success=False,
+                                             reason=f"ACO Hatası: {exc}", duration=0.0))
+            algo_records["aco"] = records
+            summaries["aco"] = summarize_runs(records)
+
+        # --- QL ---
+        if "qlearning" in algorithms:
+            records: List[RunRecord] = []
+            q_weights = ql_normalize_weights(weights[0], weights[1], weights[2])
+            reward_fn = make_reward_fn(q_weights, demand_mbps=bandwidth)
+
+            for run_idx in range(1, repeats + 1):
+                try:
+                    run_seed = None
+                    if base_seed is not None:
+                        run_seed = (base_seed + 3001 * run_idx) % (2**32 - 1)
+                        random.seed(run_seed)
+                        try:
+                            import numpy as np
+                            np.random.seed(run_seed)
+                        except Exception:
+                            pass
+
+                    start = time.perf_counter()
+                    q_table = ql_train(
+                        G, QL_NEIGHBORS,
+                        start_node=source, goal_node=dest,
+                        reward_fn=reward_fn,
+                        episodes=ql_episodes,
+                        alpha=ql_alpha, gamma=ql_gamma,
+                        epsilon_start=ql_eps_start, epsilon_end=ql_eps_end,
+                        epsilon_decay_steps=ql_decay,
+                        max_steps_per_episode=ql_max_steps,
+                        stochastic_fail=False,
+                    )
+                    duration = time.perf_counter() - start
+
+                    path = ql_greedy_path(q_table, QL_NEIGHBORS, source, dest)
+                    evaluation = evaluate_path(G, path, bandwidth, weights)
+                    evaluation.run_id = run_idx
+                    evaluation.duration = duration
+                    evaluation.seed = run_seed
+                    records.append(evaluation)
+                except Exception as exc:
+                    records.append(RunRecord(run_id=run_idx, success=False,
+                                             reason=f"QL Hatası: {exc}", duration=0.0))
+
+            algo_records["qlearning"] = records
+            summaries["qlearning"] = summarize_runs(records)
+
+        # ✅ HER ZAMAN RETURN
+        return idx, combo, summaries, algo_records
+
+    except Exception as e:
+        # ✅ Worker asla None dönmesin
+        import traceback
+        traceback.print_exc()
+        summaries["_worker_error"] = {"avg_cost": None, "error": str(e)}
+        return idx, combo, summaries, algo_records
 
 # =====================================================
 # 3. RAPORLAMA MODÜLÜ
@@ -321,9 +381,12 @@ def build_report_section(
             valid_runs.sort(key=lambda r: r.metrics['weighted_cost'])
 
             for i, rec in enumerate(valid_runs, start=1):
+                seed_str = f", Seed={rec.seed}" if rec.seed is not None else ""
                 lines.append(
-                    f"      -> #{i} (Tekrar {rec.run_id}): Delay={rec.metrics['delay_ms']:.2f} ms | "
-                    f"Rel={rec.metrics['reliability']:.5f} | Bottleneck={rec.metrics['bottleneck_mbps']:.2f} Mbps | "
+                    f"      -> #{i} (Tekrar {rec.run_id}{seed_str}): "
+                    f"Delay={rec.metrics['delay_ms']:.2f} ms | "
+                    f"Rel={rec.metrics['reliability']:.5f} | "
+                    f"Bottleneck={rec.metrics['bottleneck_mbps']:.2f} Mbps | "
                     f"Maliyet={rec.metrics['weighted_cost']:.4f}"
                 )
     return lines
@@ -388,7 +451,7 @@ def main():
     # Görev listesini hazırla
     tasks = []
     for idx, combo in enumerate(combos, start=1):
-        task_seed = seed_generator.randint(0, 2**32 - 1) if args.seed is not None else None
+        task_seed = seed_generator.randint(0, 2**32 - 1)
         tasks.append((
             idx, combo, args.algorithms, args.repeats, weights, task_seed,
             args.ga_pop, args.ga_generations, args.ga_mutation,
@@ -413,7 +476,9 @@ def main():
                 completed_count += 1
                 print(f"✅ [{completed_count}/{len(combos)}] Tamamlandı: Deney {res_idx} (S={res_combo[0]}, D={res_combo[1]})")
             except Exception as e:
-                print(f"❌ Hata oluştu Deney {idx}: {e}")
+                import traceback
+                print(f"❌ Hata oluştu Deney {idx}: {repr(e)}")
+                traceback.print_exc()
 
     # Sonuçları sıraya diz
     results_buffer.sort(key=lambda x: x[0])

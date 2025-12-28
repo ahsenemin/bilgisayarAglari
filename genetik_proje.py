@@ -8,13 +8,18 @@ import networkx as nx           # Çizge teorisi; düğüm ve bağlantı (edge) 
 # Bu graf; tüm gecikme, güvenilirlik ve bant genişliği verilerini barındıran "ağ haritasıdır".
 from ag import G
 
+def set_seed(seed: int | None):
+    if seed is None:
+        return
+    random.seed(seed)
+
 # ==============================================================================
 # 1. Genetik Algoritma Sınıfı (Meta-Sezgisel Çözücü)
 # ==============================================================================
 class GenetikAlgoritma:
     """QoS (Hizmet Kalitesi) parametrelerine göre en uygun yolu evrimsel süreçle bulan sınıf."""
     
-    def __init__(self, graf, kaynak, hedef, pop_size=100, mutasyon_orani=0.1, nesil=100, agirliklar=None, min_bw=0):
+    def __init__(self, graf, kaynak, hedef, pop_size=100, mutasyon_orani=0.1, nesil=100, agirliklar=None, min_bw=0, seed=None):
         """Sınıfın başlangıç ayarlarını (DNA'sını) yapan kurucu metod."""
         self.graph = graf           # Ağ haritasını sisteme tanıtır.
         self.kaynak = kaynak        # Rota nereden başlayacak (Örn: 8).
@@ -23,6 +28,7 @@ class GenetikAlgoritma:
         self.mutation_rate = mutasyon_orani # Bir yolun rastgele değişme ihtimali (%10).
         self.generations = nesil    # Evrimin kaç tur (kuşak) boyunca devam edeceği.
         self.min_bw = min_bw        # Kullanıcının "en az şu hız lazım" dediği alt limit kısıtı.
+        set_seed(seed)              # Rastgelelik için sabit tohum değeri ayarlanır.
         
         # Kullanıcı tercihlerine göre ağırlıklar (Toplanınca genellikle 1.0 eder).
         self.weights = agirliklar if agirliklar else [0.33, 0.33, 0.33]
@@ -215,6 +221,9 @@ def rotayi_ciz(graf, yol, kaynak, hedef):
 
 # --- ANA PROGRAM (Uygulamanın Giriş Kapısı) ---
 if __name__ == "__main__":
+
+    random.seed(SEED)
+
     print("\n" + "="*50)
     print("   GENETİK ALGORİTMA ROTA BULUCU (FULL SÜRÜM)")
     print("="*50)

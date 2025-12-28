@@ -3,9 +3,19 @@ import numpy as np
 import networkx as nx
 from collections import defaultdict
 import random
+
 import os
 
 import ag as ag  # <-- Ağ (Graph) buradan geliyor (ag.py değişmedi!)
+
+# ===============================
+# RANDOM SEED (REPRODUCIBILITY)
+# ===============================
+def set_seed(seed: int | None):
+    if seed is None:
+        return
+    random.seed(seed)
+    np.random.seed(seed)
 
 # =========================================================
 # 0) AĞIRLIKLAR (Weighted Sum Method) - DÜZENLENEBİLİR ALAN
@@ -314,7 +324,7 @@ def main():
         G, neighbors,
         start_node=start_node, goal_node=goal_node,
         reward_fn=reward_fn,
-        episodes=6000, alpha=0.15, gamma=0.97,
+        episodes=6000, alpha=0.10, gamma=0.97,
         epsilon_start=1.0, epsilon_end=0.05, epsilon_decay_steps=4000,
         max_steps_per_episode=200,
         stochastic_fail=False
@@ -322,7 +332,7 @@ def main():
     """
     
     episodes=6000: 6000 kez start→goal denemesi
-    alpha=0.15: yeni bilgi %15 etkili
+    alpha=0.10: yeni bilgi %15 etkili
     gamma=0.97: uzun vadeyi çok önemsiyor
     epsilon_start=1.0 → başta %100 keşif
     epsilon_end=0.05 → sonda %5 keşif

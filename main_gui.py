@@ -137,13 +137,21 @@ class NetworkManager:
                 self.pos_cache[n] = (cx + p[0]*scale, cy + p[1]*scale)
 
 class RouteSolver:
+    def _set_seed(self, seed: int):
+        random.seed(seed)
+        try:
+            import numpy as np
+            np.random.seed(seed)
+        except Exception:
+            pass
+
     """
     GUI ile algoritmalar arasındaki köprü sınıfı.
     """
     def __init__(self, manager): 
         self.net = manager
 
-    def solve(self, algo_type, src, dst, weights, demand_bw=4.0):
+    def solve(self, algo_type, src, dst, weights, demand_bw=4.0, seed=42):
         if self.net.graph.number_of_nodes() == 0: return None, {}, 0
         path, duration, metrics = None, 0, {}
         graph_copy = self.net.graph.copy()
@@ -151,18 +159,20 @@ class RouteSolver:
         try:
             # 1. Genetik Algoritma
             if algo_type == "Genetik Algoritma (GA)" and GA_AVAILABLE:
-                ga = GenetikAlgoritma(graph_copy, src, dst, 50, 0.1, 50, weights)
+                self._set_seed(seed)   # <-- BURAYA (GA çalışmadan hemen önce)
+                ga = GenetikAlgoritma(graph_copy, src, dst, 50, 0.1, 50, weights, min_bw=demand_bw , seed=seed) 
                 path, _, duration = ga.calistir()
 
             # 2. Karınca Kolonisi (ACO)
             elif algo_type == "Karınca Kolonisi (ACO)" and ACO_AVAILABLE:
+                self._set_seed(seed)   # <-- BURAYA (GA çalışmadan hemen önce)
                 start_t = time.time()
-                aco = ACORouting(graph_copy, src, dst, demand_bw, weights, 20, 30)
+                aco = ACORouting(graph_copy, src, dst, demand_bw, weights, 20, 30 , seed=seed)
                 path = aco.solve()[0]
                 duration = time.time() - start_t
-
             # 3. Q-Learning (RL)
             elif algo_type == "Q-Öğrenme (RL)" and RL_AVAILABLE:
+                self._set_seed(seed)   # <-- BURAYA (GA çalışmadan hemen önce)
                 start_t = time.time()
                 nbrs = {n: list(graph_copy.neighbors(n)) for n in graph_copy.nodes()}
                 w_dict = {"w_delay": weights[0], "w_rel": weights[1], "w_bw": weights[2]}
@@ -171,6 +181,8 @@ class RouteSolver:
                 path = ql.greedy_path(Q, nbrs, src, dst)
                 if not path or path[-1] != dst: path = None
                 duration = time.time() - start_t
+
+
             
             # Sonuç Metrikleri
             if path:
@@ -208,16 +220,16 @@ class CalculationWorker(QThread):
         self.solver, self.mode, self.params = solver, mode, params
     
     def run(self):
-        s, d, bw, w1, w2, w3, algo = self.params 
+        s, d, bw, w1, w2, w3, algo, seed = self.params
         weights = [w1, w2, w3]
         
         if self.mode == "Single":
-            p, m, t = self.solver.solve(algo, s, d, weights, demand_bw=bw)
+            p, m, t = self.solver.solve(algo, s, d, weights, demand_bw=bw, seed=seed)
             self.result_ready.emit(algo, p, m, t)
         
         elif self.mode == "Compare":
             for name in ["Genetik Algoritma (GA)", "Karınca Kolonisi (ACO)", "Q-Öğrenme (RL)"]:
-                p, m, t = self.solver.solve(name, s, d, weights, demand_bw=bw)
+                p, m, t = self.solver.solve(name, s, d, weights, demand_bw=bw, seed=seed)
                 self.result_ready.emit(name, p, m, t)
         
         self.finished_all.emit()
@@ -357,10 +369,42 @@ class NetworkVisualizer(QMainWindow):
         # Strateji Ayarları
         grp_algo = QGroupBox("OPTİMİZASYON STRATEJİSİ")
         g_al_lo = QVBoxLayout(grp_algo); g_al_lo.setSpacing(15)
+
+        # Seed girişi (Q-Learning için)
+        seed_cont = QWidget()
+        seed_lo = QVBoxLayout(seed_cont)
+        seed_lo.setContentsMargins(0,0,0,0)
+        seed_lo.setSpacing(5)
+
+        lbl_seed = QLabel("Seed")
+        lbl_seed.setObjectName("InputLabel")
+
+        self.spin_seed = QSpinBox()
+        self.spin_seed.setRange(0, 10_000)
+        self.spin_seed.setValue(42)  # varsayılan
+        self.spin_seed.setToolTip("Aynı seed = aynı sonuç, farklı seed = farklı rota")
+
+        seed_lo.addWidget(lbl_seed)
+        seed_lo.addWidget(self.spin_seed)
+        g_al_lo.addWidget(seed_cont)
+
         algo_cont = QWidget()
         algo_vlo = QVBoxLayout(algo_cont); algo_vlo.setContentsMargins(0,0,0,0); algo_vlo.setSpacing(5)
         algo_vlo.addWidget(QLabel("Algoritma Seçimi:", objectName="InputLabel"))
-        self.combo = QComboBox(); self.combo.addItems(["Genetik Algoritma (GA)", "Karınca Kolonisi (ACO)", "Q-Öğrenme (RL)"])
+        self.combo = QComboBox(); 
+        self.combo.addItems(["Genetik Algoritma (GA)", "Karınca Kolonisi (ACO)", "Q-Öğrenme (RL)"])
+        def on_algo_changed(text):
+            if is_rl := "Q-Öğrenme" in text:
+                self.spin_seed.setEnabled(is_rl)
+                self.spin_seed.setVisible(is_rl)
+            else:
+                self.spin_seed.setEnabled(True)
+                self.spin_seed.setVisible(True)
+
+
+        self.combo.currentTextChanged.connect(on_algo_changed)
+        on_algo_changed(self.combo.currentText())  # ilk durum
+
         algo_vlo.addWidget(self.combo)
         g_al_lo.addWidget(algo_cont)
         
@@ -591,7 +635,9 @@ class NetworkVisualizer(QMainWindow):
         self.lbl_status.setText("HESAPLANIYOR...")
         self.log.append("--- Simülasyon Başlatılıyor ---")
         algo = self.combo.currentText(); w1, w2, w3 = self.get_weights(); bw_val = self.spin_bw.value() 
-        params = (self.spin_s.value(), self.spin_d.value(), bw_val, w1, w2, w3, algo)
+        seed_val = self.spin_seed.value()
+        params = (self.spin_s.value(), self.spin_d.value(), bw_val, w1, w2, w3, algo, seed_val)
+
         self.worker = CalculationWorker(self.solver, "Single", params)
         self.worker.result_ready.connect(self.handle_result); self.worker.finished_all.connect(lambda: self.set_ui_busy(False))
         self.worker.start()
@@ -866,3 +912,18 @@ if __name__ == "__main__":
     window = NetworkVisualizer()
     window.show()
     sys.exit(app.exec())
+
+"""
+
+elif 
+    algo_type == "Q-Öğrenme (RL)" and RL_AVAILABLE:
+    start_t = time.time()
+    nbrs = {n: list(graph_copy.neighbors(n)) for n in graph_copy.nodes()}
+    w_dict = {"w_delay": weights[0], "w_rel": weights[1], "w_bw": weights[2]}
+    r_fn = ql.make_reward_fn(w_dict, demand_mbps=demand_bw)
+    Q = ql.q_learning(graph_copy, nbrs, src, dst, r_fn, 800, 0.15, 0.97, 200, 0.9, 0.05, 600)
+    path = ql.greedy_path(Q, nbrs, src, dst)
+    if not path or path[-1] != dst: path = None
+    duration = time.time() - start_t
+
+"""
