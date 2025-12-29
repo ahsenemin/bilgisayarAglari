@@ -20,8 +20,7 @@ def set_seed(seed: int | None):
 # =========================================================
 # 0) AĞIRLIKLAR (Weighted Sum Method) - DÜZENLENEBİLİR ALAN
 # =========================================================
-DEFAULT_WEIGHTS = {"w_delay": 1.0, "w_rel": 1.0, "w_bw": 1.0}
-# Ağırlıkları normalize et
+DEFAULT_WEIGHTS = {"w_delay": 1.0, "w_rel": 1.0, "w_bw": 1.0} # Ağırlıkları normalize et
 
 def normalize_weights(w_delay, w_rel, w_bw):
     s = float(w_delay) + float(w_rel) + float(w_bw)
@@ -51,9 +50,7 @@ def safe_int(x):
 # =========================================================
 G = ag.G  # NetworkX Graph
 
-# Komşuluk listesi (Q-learning için)
-neighbors = {n: list(G.neighbors(n)) for n in G.nodes()} # node: [komşu düğümler]
-# n düğümüne doğrudan bağlı olan komşu düğümleri verir
+neighbors = {n: list(G.neighbors(n)) for n in G.nodes()} # node: [komşu düğümler] n düğümüne doğrudan bağlı olan komşu düğümleri verir
 
 # =========================================================
 # 2) DEMAND VERİSİNİ OKU (Opsiyonel)
@@ -90,8 +87,7 @@ def reward_multi_with_demand(s, a, s_next, G, weights, demand_mbps=None):
     """
 
     edge = G.edges[s, s_next]
-    node_next = G.nodes[s_next]
-    # Edge ve sonraki düğümün attribute'ları
+    node_next = G.nodes[s_next] # Edge ve sonraki düğümün attribute'ları
 
     # HARD CONSTRAINT (Demand)
     if demand_mbps is not None:
@@ -100,23 +96,17 @@ def reward_multi_with_demand(s, a, s_next, G, weights, demand_mbps=None):
     # eğer talep edilen bant genişliği sağlanmıyorsa büyük ceza
     # (Bu, Q-learning'in bu tür yolları öğrenmemesini sağlar)
 
-    delay = float(edge['delay']) + float(node_next['processing_delay'])  # ms
-    # delay = delay_ms + s_ms
-    rel = float(edge['reliability']) * float(node_next['reliability'])
-    # reliability = r_link * r_node
-    unreliab = 1.0 - rel
-    # Güvenilirlik metriği maksimizasyon probleminden minimizasyona dönüştürülmüştür. Bu amaçla basit yaklaşım olarak 1 - rel kullanılmıştır.”
+    delay = float(edge['delay']) + float(node_next['processing_delay'])  # ms, delay = delay_ms + s_ms
+    rel = float(edge['reliability']) * float(node_next['reliability']) # reliability = r_link * r_node
+    unreliab = 1.0 - rel # Güvenilirlik metriği maksimizasyon probleminden minimizasyona dönüştürülmüştür. Bu amaçla basit yaklaşım olarak 1 - rel kullanılmıştır.”
 
-    inv_bw = 100.0 / max(1.0, float(edge['bandwidth']))
-    # geniş kapasite = düşük maliyet
+    inv_bw = 100.0 / max(1.0, float(edge['bandwidth'])) # geniş kapasite = düşük maliyet
 
     cost = (weights["w_delay"] * delay +
             weights["w_rel"]   * unreliab +
             weights["w_bw"]    * inv_bw)
 
-    return -cost
-    # Negatif maliyet = ödül
-    # Amaç: ödülü maksimize etmek = maliyeti minimize etmek
+    return -cost # Negatif maliyet = ödül, Amaç: ödülü maksimize etmek = maliyeti minimize etmek
 
 
 # Kullanıcadan W_delay, W_rel, W_bw bir, demand_mbps bir kere çekilir
@@ -293,11 +283,17 @@ def main():
             start_node = int(input("Başlangıç düğümü: "))
             goal_node  = int(input("Hedef düğümü: "))
             d_in = input("Demand (Mbps) [boş=kapasite kısıtı yok]: ").strip()
+            seed_in = input("Seed (boş bırak = rastgele): ").strip()
+            seed = int(seed_in) if seed_in else None
+            set_seed(seed)
             demand_mbps = safe_float(d_in) if d_in else None
     else:
         start_node = int(input("Başlangıç düğümü: "))
         goal_node  = int(input("Hedef düğümü: "))
         d_in = input("Demand (Mbps) [boş=kapasite kısıtı yok]: ").strip()
+        seed_in = input("Seed (boş bırak = rastgele): ").strip()
+        seed = int(seed_in) if seed_in else None
+        set_seed(seed)
         demand_mbps = safe_float(d_in) if d_in else None
 
     print("\n--- Ağırlıklar (W) ---")

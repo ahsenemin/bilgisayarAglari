@@ -318,6 +318,7 @@ def run_application(G):
         s_node = int(input("Başlangıç düğümü: "))
         d_node = int(input("Hedef düğüm: "))
         b_req = float(input("Bant genişliği: "))
+        
     except:
         s_node, d_node, b_req = 8, 44, 4.0
 
@@ -350,7 +351,6 @@ def run_application(G):
 # PROGRAM BAŞLANGICI
 # =====================================================
 if __name__ == "__main__":
-    random.seed(SEED)
     G = create_network_graph()
     if G:
         run_application(G)
