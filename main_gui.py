@@ -20,6 +20,8 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QGraphicsScene,
                                QSlider, QTabWidget, QTextBrowser)
 from PySide6.QtCore import Qt, QThread, Signal, Slot, QTimer, QObject
 from PySide6.QtGui import QPen, QBrush, QColor, QPainter, QFont, QPainterPath
+from PySide6.QtWidgets import QCheckBox
+
 
 # =====================================================
 # 1. HARİCİ MODÜL KONTROLLERİ
@@ -137,7 +139,9 @@ class NetworkManager:
                 self.pos_cache[n] = (cx + p[0]*scale, cy + p[1]*scale)
 
 class RouteSolver:
-    def _set_seed(self, seed: int):
+    def _set_seed(self, seed):
+        if seed is None:
+            return
         random.seed(seed)
         try:
             import numpy as np
@@ -145,13 +149,14 @@ class RouteSolver:
         except Exception:
             pass
 
+
     """
     GUI ile algoritmalar arasındaki köprü sınıfı.
     """
     def __init__(self, manager): 
         self.net = manager
 
-    def solve(self, algo_type, src, dst, weights, demand_bw=4.0, seed=42):
+    def solve(self, algo_type, src, dst, weights, demand_bw=4.0, seed=None):
         if self.net.graph.number_of_nodes() == 0: return None, {}, 0
         path, duration, metrics = None, 0, {}
         graph_copy = self.net.graph.copy()
@@ -317,6 +322,15 @@ class NetworkVisualizer(QMainWindow):
             QTabBar::tab { background: #24283b; color: #a9b1d6; padding: 10px 15px; border-top-left-radius: 8px; border-top-right-radius: 8px; font-weight: bold; margin-right: 2px; }
             QTabBar::tab:selected { background: #3b4261; color: #7aa2f7; border-bottom: 2px solid #7aa2f7; }
             QTabBar::tab:hover { background: #2f334d; color: white; }
+            QCheckBox { color: #a9b1d6; font-weight: bold; spacing: 8px; }
+            QCheckBox::indicator { width: 16px; height: 16px; }
+            QCheckBox::indicator:unchecked { border: 1px solid #414868; background: #24283b; border-radius: 3px; }
+            QCheckBox::indicator:checked { border: 1px solid #7aa2f7; background: #7aa2f7; border-radius: 3px; }
+            QSpinBox:disabled, QDoubleSpinBox:disabled, QComboBox:disabled {
+                color: #565f89;
+                border: 1px solid #2f334d;
+                background-color: #1f2335;
+            }
         """)
 
         central = QWidget(); self.setCentralWidget(central)
@@ -370,40 +384,69 @@ class NetworkVisualizer(QMainWindow):
         grp_algo = QGroupBox("OPTİMİZASYON STRATEJİSİ")
         g_al_lo = QVBoxLayout(grp_algo); g_al_lo.setSpacing(15)
 
-        # Seed girişi (Q-Learning için)
-        seed_cont = QWidget()
+        # Seed girişi
+        seed_cont = QFrame()
+        seed_cont.setStyleSheet("""
+            QFrame {
+                background-color: #16161e;
+                border: 1px solid #2f334d;
+                border-radius: 10px;
+                padding: 8px;
+            }
+        """)
+
         seed_lo = QVBoxLayout(seed_cont)
-        seed_lo.setContentsMargins(0,0,0,0)
-        seed_lo.setSpacing(5)
+        seed_lo.setContentsMargins(10, 10, 10, 10)
+        seed_lo.setSpacing(8)
+
+        # Üst satır: checkbox + küçük açıklama
+        top_row = QHBoxLayout()
+        top_row.setSpacing(10)
+
+        self.chk_seed = QCheckBox("Seed kullan")
+        self.chk_seed.setChecked(False)
+
+
+
+        top_row.addWidget(self.chk_seed)
+        top_row.addStretch()
+        seed_lo.addLayout(top_row)
+
+        # Alt satır: label + spinbox aynı hizada
+        bottom_row = QHBoxLayout()
+        bottom_row.setSpacing(10)
 
         lbl_seed = QLabel("Seed")
         lbl_seed.setObjectName("InputLabel")
 
         self.spin_seed = QSpinBox()
         self.spin_seed.setRange(0, 10_000)
-        self.spin_seed.setValue(42)  # varsayılan
-        self.spin_seed.setToolTip("Aynı seed = aynı sonuç, farklı seed = farklı rota")
+        self.spin_seed.setValue(42)
+        self.spin_seed.setEnabled(False)
+        self.spin_seed.setFixedWidth(140)  # görünüm daha dengeli
+        self.spin_seed.setAlignment(Qt.AlignCenter)
 
-        seed_lo.addWidget(lbl_seed)
-        seed_lo.addWidget(self.spin_seed)
+        bottom_row.addWidget(lbl_seed)
+        bottom_row.addStretch()
+        bottom_row.addWidget(self.spin_seed)
+
+        seed_lo.addLayout(bottom_row)
+
+        # Connect
+        self.chk_seed.toggled.connect(self.spin_seed.setEnabled)
+
+        # gruba ekle
         g_al_lo.addWidget(seed_cont)
 
+
+    
         algo_cont = QWidget()
         algo_vlo = QVBoxLayout(algo_cont); algo_vlo.setContentsMargins(0,0,0,0); algo_vlo.setSpacing(5)
         algo_vlo.addWidget(QLabel("Algoritma Seçimi:", objectName="InputLabel"))
         self.combo = QComboBox(); 
         self.combo.addItems(["Genetik Algoritma (GA)", "Karınca Kolonisi (ACO)", "Q-Öğrenme (RL)"])
-        def on_algo_changed(text):
-            if is_rl := "Q-Öğrenme" in text:
-                self.spin_seed.setEnabled(is_rl)
-                self.spin_seed.setVisible(is_rl)
-            else:
-                self.spin_seed.setEnabled(True)
-                self.spin_seed.setVisible(True)
-
-
-        self.combo.currentTextChanged.connect(on_algo_changed)
-        on_algo_changed(self.combo.currentText())  # ilk durum
+        
+        
 
         algo_vlo.addWidget(self.combo)
         g_al_lo.addWidget(algo_cont)
@@ -635,8 +678,9 @@ class NetworkVisualizer(QMainWindow):
         self.lbl_status.setText("HESAPLANIYOR...")
         self.log.append("--- Simülasyon Başlatılıyor ---")
         algo = self.combo.currentText(); w1, w2, w3 = self.get_weights(); bw_val = self.spin_bw.value() 
-        seed_val = self.spin_seed.value()
+        seed_val = self.spin_seed.value() if self.chk_seed.isChecked() else None
         params = (self.spin_s.value(), self.spin_d.value(), bw_val, w1, w2, w3, algo, seed_val)
+
 
         self.worker = CalculationWorker(self.solver, "Single", params)
         self.worker.result_ready.connect(self.handle_result); self.worker.finished_all.connect(lambda: self.set_ui_busy(False))
@@ -649,7 +693,8 @@ class NetworkVisualizer(QMainWindow):
         self.table_res.setRowCount(0); self.lbl_status.setText("KIYASLANIYOR...")
         self.log.append("--- Karşılaştırma Başlatılıyor ---")
         w1, w2, w3 = self.get_weights(); bw_val = self.spin_bw.value() 
-        params = (self.spin_s.value(), self.spin_d.value(), bw_val, w1, w2, w3, "ALL")
+        seed_val = self.spin_seed.value() if self.chk_seed.isChecked() else None
+        params = (self.spin_s.value(), self.spin_d.value(), bw_val, w1, w2, w3, "ALL", seed_val)
         self.worker = CalculationWorker(self.solver, "Compare", params)
         self.worker.result_ready.connect(self.handle_result); self.worker.finished_all.connect(self.finish_compare)
         self.worker.start()
