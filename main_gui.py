@@ -69,43 +69,56 @@ except ImportError:
 
 def calculate_path_metrics_detailed(graph, path):
     """
-    Verilen yol (path) için Gecikme, Güvenilirlik ve Kaynak maliyetlerini hesaplar.
+    Verilen yol (path) için:
+      - total_delay (ms)
+      - rel_cost (log-cost)  [eski mantık]
+      - res_cost
+      - total_rel (0..1)     [YENİ: toplam güvenilirlik]
+      - rel_cost_pct (%)     [YENİ: yüzde maliyet = 100*(1-total_rel)]
+    hesaplar.
     """
-    if not path or len(path) < 2: 
-        return 0, 0, 0
-    
+    if not path or len(path) < 2:
+        return 0, 0, 0, 0, 0
+
     total_delay = 0.0
-    rel_cost = 0.0
+    rel_cost_log = 0.0
     res_cost = 0.0
+
+    total_rel = 1.0  # <-- YENİ: çarpımsal toplam güvenilirlik
 
     # Kenar (Edge) Maliyetleri
     for i in range(len(path) - 1):
         u, v = path[i], path[i+1]
-        if not graph.has_edge(u, v): 
-            return 0, 0, 0
-        
+        if not graph.has_edge(u, v):
+            return 0, 0, 0, 0, 0
+
         edge = graph[u][v]
         total_delay += edge.get('delay', 0)
-        
-        # Güvenilirlik (Logaritmik toplam)
-        r_link = edge.get('reliability', 0.99)
-        rel_cost += -math.log(r_link if r_link > 0 else 1e-6)
-        
-        # Kaynak Maliyeti (Bant genişliği ile ters orantılı)
-        bw = edge.get('bandwidth', 100)
+
+        r_link = float(edge.get('reliability', 0.99))
+        r_link = max(min(r_link, 1.0), 1e-6)  # güvenli aralık
+        rel_cost_log += -math.log(r_link)
+        total_rel *= r_link  # <-- YENİ
+
+        bw = float(edge.get('bandwidth', 100))
         res_cost += (1000.0 / (bw if bw > 0 else 1))
 
     # Düğüm (Node) Maliyetleri
     for i, node in enumerate(path):
         n_data = graph.nodes[node]
-        r_node = n_data.get('reliability', 0.99)
-        rel_cost += -math.log(r_node if r_node > 0 else 1e-6)
-        
-        # Başlangıç ve bitiş hariç işlem gecikmesi
+        r_node = float(n_data.get('reliability', 0.99))
+        r_node = max(min(r_node, 1.0), 1e-6)
+        rel_cost_log += -math.log(r_node)
+        total_rel *= r_node  # <-- YENİ
+
         if i != 0 and i != len(path) - 1:
             total_delay += n_data.get('processing_delay', 0)
 
-    return total_delay, rel_cost, res_cost
+    rel_cost_pct = (1.0 - total_rel) * 100.0          # <-- YENİ: yüzde “maliyet”
+    # istersen ayrıca güvenilirlik yüzdesi de kullanırsın:
+    # rel_pct = total_rel * 100.0
+
+    return total_delay, rel_cost_log, res_cost, total_rel, rel_cost_pct
 
 class NetworkManager:
     """
@@ -137,6 +150,7 @@ class NetworkManager:
             self.pos_cache = {} 
             for n, p in raw_pos.items():
                 self.pos_cache[n] = (cx + p[0]*scale, cy + p[1]*scale)
+
 
 class RouteSolver:
     def _set_seed(self, seed):
@@ -191,8 +205,15 @@ class RouteSolver:
             
             # Sonuç Metrikleri
             if path:
-                d, r, c = calculate_path_metrics_detailed(self.net.graph, path)
-                metrics = {'delay': d, 'rel_cost': r, 'res_cost': c}
+                d, rlog, c, rel_total, rel_pct_cost = calculate_path_metrics_detailed(self.net.graph, path)
+                metrics = {
+                    'delay': d,
+                    'rel_cost': rlog,              # eski log-cost (istersen kalsın)
+                    'rel_total': rel_total,        # 0..1
+                    'rel_cost_pct': rel_pct_cost,  # 0..100  <-- GUI’de bunu göstereceğiz
+                    'res_cost': c
+                }
+
 
         except Exception as e: 
             print(f"Hata: {e}")
@@ -552,7 +573,7 @@ class NetworkVisualizer(QMainWindow):
             hl.addWidget(l1); hl.addWidget(l2)
             return w, l2
         w_time, self.lbl_time = mk_row("⏱️", "Çalışma Süresi")
-        w_score, self.lbl_score = mk_row("🏆", "Toplam Uygunluk")
+        w_score, self.lbl_score = mk_row("🏆", "Toplam Maliyet")
         ov_lo.addWidget(w_time); ov_lo.addWidget(w_score)
         lbl_r_head = QLabel("🛣️ İzlenen Rota:"); lbl_r_head.setStyleSheet("color: #bb9af7; font-weight: bold;")
         ov_lo.addWidget(lbl_r_head)
@@ -564,7 +585,7 @@ class NetworkVisualizer(QMainWindow):
         self.grp_qos = QGroupBox("QoS Detayları")
         qos_lo = QVBoxLayout(self.grp_qos); qos_lo.setSpacing(8)
         w_d, self.lbl_delay = mk_row("⚡", "Toplam Gecikme")
-        w_r, self.lbl_rel = mk_row("🛡️", "Güvenilirlik Maliyeti")
+        w_r, self.lbl_rel = mk_row("🛡️", "Risk Maliyeti")
         w_b, self.lbl_res = mk_row("💰", "Kaynak Maliyeti")
         qos_lo.addWidget(w_d); qos_lo.addWidget(w_r); qos_lo.addWidget(w_b)
         single_lo.addWidget(self.grp_qos)
@@ -665,8 +686,14 @@ class NetworkVisualizer(QMainWindow):
         self.pbar.setVisible(busy); 
         if not busy: self.pbar.setValue(0)
 
-    def get_weights(self): 
-        return self.slider_w1.value()/100.0, self.slider_w2.value()/100.0, self.slider_w3.value()/100.0
+    def get_weights(self):
+        w1 = self.slider_w1.value() / 100.0
+        w2 = self.slider_w2.value() / 100.0
+        w3 = self.slider_w3.value() / 100.0
+        s = w1 + w2 + w3
+        if s <= 1e-9:
+            return 1/3, 1/3, 1/3
+        return w1/s, w2/s, w3/s
 
     # -----------------------------
     # İŞLEM BAŞLATMA
@@ -898,7 +925,7 @@ class NetworkVisualizer(QMainWindow):
     @Slot(str, object, object, float)
     def handle_result(self, algo, path, metrics, duration):
         w1, w2, w3 = self.get_weights(); cost = 0.0
-        if path: cost = (w1*metrics.get('delay',0)) + (w2*metrics.get('rel_cost',0)*100) + (w3*metrics.get('res_cost',0))
+        if path: cost = (w1*metrics.get('delay',0)) + (1 - w2*metrics.get('rel_cost',0)) + (w3*metrics.get('res_cost',0))
         self.log.append(f"{algo}: Maliyet={cost:.2f} ({duration:.2f}s)")
         
         if self.mode == "Single":
@@ -911,7 +938,7 @@ class NetworkVisualizer(QMainWindow):
                 self.log.append(f"Rota: {rota_str}")
                 self.lbl_score.setText(f"{cost:.4f}")
                 self.lbl_delay.setText(f"{metrics.get('delay',0):.2f} ms")
-                self.lbl_rel.setText(f"{metrics.get('rel_cost',0):.4f}")
+                self.lbl_rel.setText(f"%{metrics.get('rel_cost_pct',0):.2f}")
                 self.lbl_res.setText(f"{metrics.get('res_cost',0):.2f}")
                 self.draw_path(path, QColor("#e0af68"))
             else:
