@@ -9,6 +9,46 @@ Bu proje, ağ topolojisinde optimal rota bulma problemini çözmek için üç fa
 - **Karınca Kolonisi Optimizasyonu (ACO)**: Doğa esinlenmeli sürü zekası algoritması  
 - **Q-Learning**: Pekiştirmeli öğrenme tabanlı yaklaşım
 
+## 🖼️ Ekran Görüntüleri
+
+Aşağıdaki görseller `main_gui.py` üzerinden alınmıştır (250 düğümlü topoloji).
+
+### 1. Başlangıç Ekranı — Ağ Haritası
+
+Uygulama açıldığında 250 düğümlü ağ topolojisi çizilir. Sol panelden kaynak/hedef düğüm,
+talep edilen bant genişliği, algoritma ve QoS ağırlıkları (gecikme / güvenilirlik / kaynak) seçilir.
+
+<p align="center">
+  <img src="docs/gorseller/01-arayuz-baslangic.png" alt="Başlangıç ekranı ve ağ haritası" width="100%">
+</p>
+
+### 2. Tek Algoritma Çalıştırma — En İyi Yol
+
+**HESAPLA (BAŞLAT)** ile seçili algoritma çalıştırılır. Bulunan rota harita üzerinde vurgulanır;
+sağ panelde çalışma süresi, toplam maliyet, izlenen rota ve QoS detayları (gecikme, risk, kaynak maliyeti) listelenir.
+
+<p align="center">
+  <img src="docs/gorseller/02-tek-algoritma-sonuc.png" alt="Genetik Algoritma ile bulunan en iyi yol" width="100%">
+</p>
+
+### 3. Algoritma Karşılaştırma
+
+**KARŞILAŞTIR** butonu üç algoritmayı (GA, ACO, Q-Learning) aynı talep üzerinde arka arkaya çalıştırır ve
+maliyet/süre tablosunu üreterek kazananı belirler.
+
+<p align="center">
+  <img src="docs/gorseller/03-algoritma-karsilastirma.png" alt="GA, ACO ve Q-Learning karşılaştırma sonuçları" width="100%">
+</p>
+
+### 4. Toplu Deney ve Özet Rapor
+
+**TOPLU DENEY** çok sayıda talebi tekrarlı olarak (paralel yürütme ile) çalıştırır. Rapor sekmesinde her deney için
+başarı oranı, ortalama süre, ortalama maliyet ± standart sapma ve en iyi/en kötü değerler tablo halinde sunulur.
+
+<p align="center">
+  <img src="docs/gorseller/04-toplu-deney-raporu.png" alt="Toplu deney özet istatistik raporu" width="100%">
+</p>
+
 ## 🛠️ Sistem Gereksinimleri
 
 ### Python Sürümü
@@ -136,6 +176,15 @@ Karınca Kolonisi:
   🏆 En İyi: 128.45, En Kötü: 167.89
 ```
 
+### Detaylı Çıktı Örneği
+
+Deney düzeneği, GUI'deki özet tablonun yanı sıra her tekrarın seed'ini, gecikmesini, güvenilirliğini,
+darboğaz bant genişliğini ve maliyetini içeren tam detaylı bir metin raporu üretir:
+
+<p align="center">
+  <img src="docs/gorseller/05-deney-detay-cikti.png" alt="deney_detay_*.txt detayli rapor ciktisi" width="78%">
+</p>
+
 ## 📁 Proje Yapısı
 
 ```
@@ -151,6 +200,7 @@ bilgisayarAglari/
 ├── 📊 BSM307_317_Guz2025_TermProject_EdgeData.csv
 ├── 📊 BSM307_317_Guz2025_TermProject_DemandData.csv
 ├── 📁 data/                        # Ek veri dosyaları
+├── 📁 docs/gorseller/              # README ekran görüntüleri
 ├── 📁 rapor/                       # Rapor çıktıları
 └── 📁 __pycache__/                 # Python cache dosyaları
 ```

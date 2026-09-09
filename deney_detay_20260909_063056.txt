@@ -1,0 +1,649 @@
+Deney Tarihi: 20260909_063056
+Kullanılan ağırlıklar (normalize): [0.4, 0.4, 0.2]
+Algoritmalar: ga, aco, qlearning | Kayıt: 20 | Tekrar: 5
+Mod: Yüksek Performans (Parallel Execution)
+
+=== Deney 01: S=8, D=44, B=200.00 Mbps ===
+
+[Genetik Algoritma] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 10.9152
+   Süre (sn) -> Ortalama: 3.8786, En iyi: 3.7136, En kötü: 4.2097
+   Maliyet -> Ortalama: 10.9152, Std: 1.1606, En iyi: 9.4920, En kötü: 12.3032
+   En iyi rota: [8, 244, 44]
+      -> #1 (Tekrar 1, Seed=2221608990): Delay=8.36 ms | Rel=0.88323 | Bottleneck=215.00 Mbps | Maliyet=9.4920
+      -> #2 (Tekrar 2, Seed=2221609999): Delay=11.70 ms | Rel=0.88600 | Bottleneck=358.00 Mbps | Maliyet=10.4044
+      -> #3 (Tekrar 5, Seed=2221613026): Delay=10.04 ms | Rel=0.86366 | Bottleneck=576.00 Mbps | Maliyet=10.4719
+      -> #4 (Tekrar 3, Seed=2221611008): Delay=18.93 ms | Rel=0.90795 | Bottleneck=798.00 Mbps | Maliyet=11.9045
+      -> #5 (Tekrar 4, Seed=2221612017): Delay=14.85 ms | Rel=0.86964 | Bottleneck=689.00 Mbps | Maliyet=12.3032
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 12.1457
+   Süre (sn) -> Ortalama: 0.3693, En iyi: 0.3291, En kötü: 0.3988
+   Maliyet -> Ortalama: 12.1457, Std: 2.6565, En iyi: 8.2170, En kötü: 15.2697
+   En iyi rota: [8, 81, 44]
+      -> #1 (Tekrar 2, Seed=2221613983): Delay=12.11 ms | Rel=0.93354 | Bottleneck=632.00 Mbps | Maliyet=8.2170
+      -> #2 (Tekrar 1, Seed=2221610982): Delay=8.59 ms | Rel=0.85711 | Bottleneck=209.00 Mbps | Maliyet=11.1855
+      -> #3 (Tekrar 5, Seed=2221622986): Delay=19.01 ms | Rel=0.90623 | Bottleneck=269.00 Mbps | Maliyet=12.5019
+      -> #4 (Tekrar 4, Seed=2221619985): Delay=20.01 ms | Rel=0.88451 | Bottleneck=565.00 Mbps | Maliyet=13.5544
+      -> #5 (Tekrar 3, Seed=2221616984): Delay=21.33 ms | Rel=0.86168 | Bottleneck=387.00 Mbps | Maliyet=15.2697
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 14.7258
+   Süre (sn) -> Ortalama: 1.4754, En iyi: 0.6650, En kötü: 1.8624
+   Maliyet -> Ortalama: 14.7258, Std: 5.8154, En iyi: 8.2170, En kötü: 22.6084
+   En iyi rota: [8, 81, 44]
+      -> #1 (Tekrar 5, Seed=2221617996): Delay=12.11 ms | Rel=0.93354 | Bottleneck=632.00 Mbps | Maliyet=8.2170
+      -> #2 (Tekrar 2, Seed=2221611987): Delay=8.59 ms | Rel=0.85711 | Bottleneck=209.00 Mbps | Maliyet=11.1855
+      -> #3 (Tekrar 1, Seed=2221609984): Delay=15.53 ms | Rel=0.86902 | Bottleneck=315.00 Mbps | Maliyet=12.9901
+      -> #4 (Tekrar 4, Seed=2221615993): Delay=18.38 ms | Rel=0.77899 | Bottleneck=502.00 Mbps | Maliyet=18.6283
+      -> #5 (Tekrar 3, Seed=2221613990): Delay=21.80 ms | Rel=0.74144 | Bottleneck=232.00 Mbps | Maliyet=22.6084
+
+=== Deney 02: S=24, D=221, B=172.00 Mbps ===
+
+[Karınca Kolonisi] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 12.4168
+   Süre (sn) -> Ortalama: 1.5606, En iyi: 1.1301, En kötü: 1.9455
+   Maliyet -> Ortalama: 12.4168, Std: 3.9667, En iyi: 10.2505, En kötü: 19.3907
+   En iyi rota: [24, 58, 221]
+      -> #1 (Tekrar 1, Seed=2678632327): Delay=9.01 ms | Rel=0.85856 | Bottleneck=608.00 Mbps | Maliyet=10.2505
+      -> #2 (Tekrar 3, Seed=2678636333): Delay=9.01 ms | Rel=0.85856 | Bottleneck=608.00 Mbps | Maliyet=10.2505
+      -> #3 (Tekrar 5, Seed=2678640339): Delay=9.01 ms | Rel=0.85856 | Bottleneck=608.00 Mbps | Maliyet=10.2505
+      -> #4 (Tekrar 4, Seed=2678638336): Delay=12.69 ms | Rel=0.85748 | Bottleneck=458.00 Mbps | Maliyet=11.9417
+      -> #5 (Tekrar 2, Seed=2678634330): Delay=21.83 ms | Rel=0.78501 | Bottleneck=701.00 Mbps | Maliyet=19.3907
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 12.6938
+   Süre (sn) -> Ortalama: 3.8587, En iyi: 3.6346, En kötü: 4.1450
+   Maliyet -> Ortalama: 12.6938, Std: 2.0277, En iyi: 10.8383, En kötü: 15.5693
+   En iyi rota: [24, 179, 221]
+      -> #1 (Tekrar 3, Seed=2678633351): Delay=11.77 ms | Rel=0.88800 | Bottleneck=185.00 Mbps | Maliyet=10.8383
+      -> #2 (Tekrar 5, Seed=2678635369): Delay=11.77 ms | Rel=0.88800 | Bottleneck=185.00 Mbps | Maliyet=10.8383
+      -> #3 (Tekrar 4, Seed=2678634360): Delay=16.76 ms | Rel=0.88318 | Bottleneck=528.00 Mbps | Maliyet=12.4249
+      -> #4 (Tekrar 2, Seed=2678632342): Delay=16.97 ms | Rel=0.86149 | Bottleneck=398.00 Mbps | Maliyet=13.7983
+      -> #5 (Tekrar 1, Seed=2678631333): Delay=17.88 ms | Rel=0.83685 | Bottleneck=353.00 Mbps | Maliyet=15.5693
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 13.0537
+   Süre (sn) -> Ortalama: 0.3730, En iyi: 0.3421, En kötü: 0.4154
+   Maliyet -> Ortalama: 13.0537, Std: 1.0980, En iyi: 11.9417, En kötü: 14.1578
+   En iyi rota: [24, 13, 221]
+      -> #1 (Tekrar 2, Seed=2678636326): Delay=12.69 ms | Rel=0.85748 | Bottleneck=458.00 Mbps | Maliyet=11.9417
+      -> #2 (Tekrar 4, Seed=2678642328): Delay=13.14 ms | Rel=0.87375 | Bottleneck=208.00 Mbps | Maliyet=11.9828
+      -> #3 (Tekrar 1, Seed=2678633325): Delay=16.43 ms | Rel=0.87777 | Bottleneck=200.00 Mbps | Maliyet=13.0282
+      -> #4 (Tekrar 3, Seed=2678639327): Delay=22.10 ms | Rel=0.90072 | Bottleneck=231.00 Mbps | Maliyet=14.1578
+      -> #5 (Tekrar 5, Seed=2678645329): Delay=22.10 ms | Rel=0.90072 | Bottleneck=231.00 Mbps | Maliyet=14.1578
+
+=== Deney 03: S=32, D=42, B=162.00 Mbps ===
+
+[Q-Learning] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 12.6580
+   Süre (sn) -> Ortalama: 0.2874, En iyi: 0.2716, En kötü: 0.3064
+   Maliyet -> Ortalama: 12.6580, Std: 2.7202, En iyi: 9.7998, En kötü: 16.4909
+   En iyi rota: [32, 192, 42]
+      -> #1 (Tekrar 4, Seed=3894998371): Delay=13.22 ms | Rel=0.91353 | Bottleneck=316.00 Mbps | Maliyet=9.7998
+      -> #2 (Tekrar 2, Seed=3894992369): Delay=14.56 ms | Rel=0.89775 | Bottleneck=793.00 Mbps | Maliyet=10.6298
+      -> #3 (Tekrar 5, Seed=3895001372): Delay=14.88 ms | Rel=0.89787 | Bottleneck=204.00 Mbps | Maliyet=12.1675
+      -> #4 (Tekrar 1, Seed=3894989368): Delay=21.33 ms | Rel=0.87953 | Bottleneck=684.00 Mbps | Maliyet=14.2019
+      -> #5 (Tekrar 3, Seed=3894995370): Delay=22.47 ms | Rel=0.84582 | Bottleneck=420.00 Mbps | Maliyet=16.4909
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 13.1380
+   Süre (sn) -> Ortalama: 3.9992, En iyi: 3.8194, En kötü: 4.2898
+   Maliyet -> Ortalama: 13.1380, Std: 1.2442, En iyi: 12.0628, En kötü: 14.8568
+   En iyi rota: [32, 246, 42]
+      -> #1 (Tekrar 1, Seed=3894987376): Delay=18.44 ms | Rel=0.89880 | Bottleneck=944.00 Mbps | Maliyet=12.0628
+      -> #2 (Tekrar 2, Seed=3894988385): Delay=18.44 ms | Rel=0.89880 | Bottleneck=944.00 Mbps | Maliyet=12.0628
+      -> #3 (Tekrar 5, Seed=3894991412): Delay=19.86 ms | Rel=0.90303 | Bottleneck=571.00 Mbps | Maliyet=12.7085
+      -> #4 (Tekrar 4, Seed=3894990403): Delay=18.55 ms | Rel=0.85812 | Bottleneck=792.00 Mbps | Maliyet=13.9990
+      -> #5 (Tekrar 3, Seed=3894989394): Delay=19.50 ms | Rel=0.85762 | Bottleneck=579.00 Mbps | Maliyet=14.8568
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 14.6112
+   Süre (sn) -> Ortalama: 2.0439, En iyi: 1.4464, En kötü: 2.7268
+   Maliyet -> Ortalama: 14.6112, Std: 4.8312, En iyi: 8.1124, En kötü: 20.6169
+   En iyi rota: [32, 191, 42]
+      -> #1 (Tekrar 4, Seed=3894994379): Delay=10.05 ms | Rel=0.92104 | Bottleneck=354.00 Mbps | Maliyet=8.1124
+      -> #2 (Tekrar 2, Seed=3894990373): Delay=13.50 ms | Rel=0.86589 | Bottleneck=631.00 Mbps | Maliyet=11.7473
+      -> #3 (Tekrar 1, Seed=3894988370): Delay=17.60 ms | Rel=0.85022 | Bottleneck=204.00 Mbps | Maliyet=15.5073
+      -> #4 (Tekrar 5, Seed=3894996382): Delay=19.37 ms | Rel=0.81507 | Bottleneck=573.00 Mbps | Maliyet=17.0720
+      -> #5 (Tekrar 3, Seed=3894992376): Delay=23.06 ms | Rel=0.77715 | Bottleneck=621.00 Mbps | Maliyet=20.6169
+
+=== Deney 04: S=37, D=208, B=124.00 Mbps ===
+
+[Genetik Algoritma] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 9.7893
+   Süre (sn) -> Ortalama: 3.9880, En iyi: 3.8970, En kötü: 4.1661
+   Maliyet -> Ortalama: 9.7893, Std: 1.8488, En iyi: 7.0516, En kötü: 12.2103
+   En iyi rota: [37, 112, 208]
+      -> #1 (Tekrar 1, Seed=540401583): Delay=11.69 ms | Rel=0.95373 | Bottleneck=713.00 Mbps | Maliyet=7.0516
+      -> #2 (Tekrar 2, Seed=540402592): Delay=16.27 ms | Rel=0.95280 | Bottleneck=341.00 Mbps | Maliyet=9.5236
+      -> #3 (Tekrar 5, Seed=540405619): Delay=13.21 ms | Rel=0.90534 | Bottleneck=631.00 Mbps | Maliyet=9.8861
+      -> #4 (Tekrar 4, Seed=540404610): Delay=14.42 ms | Rel=0.90926 | Bottleneck=441.00 Mbps | Maliyet=10.2748
+      -> #5 (Tekrar 3, Seed=540403601): Delay=20.94 ms | Rel=0.93231 | Bottleneck=263.00 Mbps | Maliyet=12.2103
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 10.0883
+   Süre (sn) -> Ortalama: 0.3862, En iyi: 0.3499, En kötü: 0.4509
+   Maliyet -> Ortalama: 10.0883, Std: 2.0909, En iyi: 6.8727, En kötü: 11.9351
+   En iyi rota: [37, 162, 208]
+      -> #1 (Tekrar 4, Seed=540412578): Delay=10.96 ms | Rel=0.96738 | Bottleneck=215.00 Mbps | Maliyet=6.8727
+      -> #2 (Tekrar 3, Seed=540409577): Delay=16.27 ms | Rel=0.95280 | Bottleneck=341.00 Mbps | Maliyet=9.5236
+      -> #3 (Tekrar 5, Seed=540415579): Delay=15.33 ms | Rel=0.91847 | Bottleneck=624.00 Mbps | Maliyet=10.1750
+      -> #4 (Tekrar 1, Seed=540403575): Delay=15.44 ms | Rel=0.88148 | Bottleneck=433.00 Mbps | Maliyet=11.9351
+      -> #5 (Tekrar 2, Seed=540406576): Delay=15.44 ms | Rel=0.88148 | Bottleneck=433.00 Mbps | Maliyet=11.9351
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 11.8417
+   Süre (sn) -> Ortalama: 1.4027, En iyi: 1.2314, En kötü: 1.8438
+   Maliyet -> Ortalama: 11.8417, Std: 2.1936, En iyi: 9.8861, En kötü: 14.3255
+   En iyi rota: [37, 115, 208]
+      -> #1 (Tekrar 1, Seed=540402577): Delay=13.21 ms | Rel=0.90534 | Bottleneck=631.00 Mbps | Maliyet=9.8861
+      -> #2 (Tekrar 5, Seed=540410589): Delay=14.42 ms | Rel=0.90926 | Bottleneck=441.00 Mbps | Maliyet=10.2748
+      -> #3 (Tekrar 2, Seed=540404580): Delay=12.03 ms | Rel=0.88696 | Bottleneck=441.00 Mbps | Maliyet=10.5920
+      -> #4 (Tekrar 3, Seed=540406583): Delay=17.16 ms | Rel=0.85505 | Bottleneck=386.00 Mbps | Maliyet=14.1301
+      -> #5 (Tekrar 4, Seed=540408586): Delay=15.75 ms | Rel=0.83786 | Bottleneck=460.00 Mbps | Maliyet=14.3255
+
+=== Deney 05: S=51, D=124, B=94.00 Mbps ===
+
+[Genetik Algoritma] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 5.5873
+   Süre (sn) -> Ortalama: 1.1222, En iyi: 1.0328, En kötü: 1.2204
+   Maliyet -> Ortalama: 5.5873, Std: 0.0000, En iyi: 5.5873, En kötü: 5.5873
+   En iyi rota: [51, 124]
+      -> #1 (Tekrar 1, Seed=3705517856): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+      -> #2 (Tekrar 2, Seed=3705518865): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+      -> #3 (Tekrar 3, Seed=3705519874): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+      -> #4 (Tekrar 4, Seed=3705520883): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+      -> #5 (Tekrar 5, Seed=3705521892): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 6.6119
+   Süre (sn) -> Ortalama: 0.3139, En iyi: 0.2845, En kötü: 0.3551
+   Maliyet -> Ortalama: 6.6119, Std: 2.2912, En iyi: 5.5873, En kötü: 10.7105
+   En iyi rota: [51, 124]
+      -> #1 (Tekrar 1, Seed=3705519848): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+      -> #2 (Tekrar 2, Seed=3705522849): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+      -> #3 (Tekrar 4, Seed=3705528851): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+      -> #4 (Tekrar 5, Seed=3705531852): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+      -> #5 (Tekrar 3, Seed=3705525850): Delay=9.01 ms | Rel=0.85905 | Bottleneck=249.00 Mbps | Maliyet=10.7105
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 8.5566
+   Süre (sn) -> Ortalama: 0.8693, En iyi: 0.5769, En kötü: 1.1454
+   Maliyet -> Ortalama: 8.5566, Std: 2.7205, En iyi: 5.5873, En kötü: 10.7404
+   En iyi rota: [51, 124]
+      -> #1 (Tekrar 1, Seed=3705518850): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+      -> #2 (Tekrar 5, Seed=3705526862): Delay=7.00 ms | Rel=0.93778 | Bottleneck=919.00 Mbps | Maliyet=5.5873
+      -> #3 (Tekrar 4, Seed=3705524859): Delay=11.87 ms | Rel=0.88423 | Bottleneck=807.00 Mbps | Maliyet=10.1573
+      -> #4 (Tekrar 2, Seed=3705520853): Delay=9.01 ms | Rel=0.85905 | Bottleneck=249.00 Mbps | Maliyet=10.7105
+      -> #5 (Tekrar 3, Seed=3705522856): Delay=11.57 ms | Rel=0.87755 | Bottleneck=334.00 Mbps | Maliyet=10.7404
+
+=== Deney 06: S=53, D=19, B=57.00 Mbps ===
+
+[Karınca Kolonisi] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 13.7951
+   Süre (sn) -> Ortalama: 1.3189, En iyi: 1.1462, En kötü: 1.5657
+   Maliyet -> Ortalama: 13.7951, Std: 2.1543, En iyi: 11.1923, En kötü: 16.8350
+   En iyi rota: [53, 126, 19]
+      -> #1 (Tekrar 4, Seed=3911287945): Delay=7.56 ms | Rel=0.82555 | Bottleneck=745.00 Mbps | Maliyet=11.1923
+      -> #2 (Tekrar 3, Seed=3911285942): Delay=15.16 ms | Rel=0.87527 | Bottleneck=330.00 Mbps | Maliyet=12.3747
+      -> #3 (Tekrar 5, Seed=3911289948): Delay=16.57 ms | Rel=0.83796 | Bottleneck=880.00 Mbps | Maliyet=14.1320
+      -> #4 (Tekrar 2, Seed=3911283939): Delay=16.35 ms | Rel=0.84328 | Bottleneck=265.00 Mbps | Maliyet=14.4414
+      -> #5 (Tekrar 1, Seed=3911281936): Delay=16.04 ms | Rel=0.79620 | Bottleneck=393.00 Mbps | Maliyet=16.8350
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 14.5097
+   Süre (sn) -> Ortalama: 0.3960, En iyi: 0.3540, En kötü: 0.4224
+   Maliyet -> Ortalama: 14.5097, Std: 2.1162, En iyi: 11.1318, En kötü: 16.6511
+   En iyi rota: [53, 31, 19]
+      -> #1 (Tekrar 3, Seed=3911288936): Delay=8.52 ms | Rel=0.84327 | Bottleneck=297.00 Mbps | Maliyet=11.1318
+      -> #2 (Tekrar 4, Seed=3911291937): Delay=19.45 ms | Rel=0.85828 | Bottleneck=598.00 Mbps | Maliyet=14.4376
+      -> #3 (Tekrar 5, Seed=3911294938): Delay=19.45 ms | Rel=0.85828 | Bottleneck=598.00 Mbps | Maliyet=14.4376
+      -> #4 (Tekrar 2, Seed=3911285935): Delay=17.53 ms | Rel=0.82626 | Bottleneck=284.00 Mbps | Maliyet=15.8905
+      -> #5 (Tekrar 1, Seed=3911282934): Delay=18.47 ms | Rel=0.80689 | Bottleneck=435.00 Mbps | Maliyet=16.6511
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 15.8808
+   Süre (sn) -> Ortalama: 4.0217, En iyi: 3.8448, En kötü: 4.2535
+   Maliyet -> Ortalama: 15.8808, Std: 3.4871, En iyi: 10.8296, En kötü: 20.0730
+   En iyi rota: [53, 62, 19]
+      -> #1 (Tekrar 1, Seed=3911280942): Delay=12.47 ms | Rel=0.88411 | Bottleneck=388.00 Mbps | Maliyet=10.8296
+      -> #2 (Tekrar 4, Seed=3911283969): Delay=17.75 ms | Rel=0.85570 | Bottleneck=260.00 Mbps | Maliyet=14.3512
+      -> #3 (Tekrar 2, Seed=3911281951): Delay=18.47 ms | Rel=0.80689 | Bottleneck=435.00 Mbps | Maliyet=16.6511
+      -> #4 (Tekrar 5, Seed=3911284978): Delay=20.32 ms | Rel=0.83186 | Bottleneck=200.00 Mbps | Maliyet=17.4988
+      -> #5 (Tekrar 3, Seed=3911282960): Delay=27.95 ms | Rel=0.85943 | Bottleneck=145.00 Mbps | Maliyet=20.0730
+
+=== Deney 07: S=58, D=106, B=115.00 Mbps ===
+
+[Karınca Kolonisi] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 14.1052
+   Süre (sn) -> Ortalama: 2.0093, En iyi: 1.1107, En kötü: 3.3269
+   Maliyet -> Ortalama: 14.1052, Std: 3.2662, En iyi: 9.8159, En kötü: 17.7756
+   En iyi rota: [58, 178, 106]
+      -> #1 (Tekrar 3, Seed=845324570): Delay=10.80 ms | Rel=0.88713 | Bottleneck=485.00 Mbps | Maliyet=9.8159
+      -> #2 (Tekrar 4, Seed=845326573): Delay=18.24 ms | Rel=0.88262 | Bottleneck=774.00 Mbps | Maliyet=12.8062
+      -> #3 (Tekrar 1, Seed=845320564): Delay=14.13 ms | Rel=0.83892 | Bottleneck=775.00 Mbps | Maliyet=13.1568
+      -> #4 (Tekrar 2, Seed=845322567): Delay=20.67 ms | Rel=0.82008 | Bottleneck=683.00 Mbps | Maliyet=16.9714
+      -> #5 (Tekrar 5, Seed=845328576): Delay=19.65 ms | Rel=0.81479 | Bottleneck=198.00 Mbps | Maliyet=17.7756
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 14.3522
+   Süre (sn) -> Ortalama: 0.3080, En iyi: 0.2966, En kötü: 0.3190
+   Maliyet -> Ortalama: 14.3522, Std: 2.7437, En iyi: 10.9464, En kötü: 17.2672
+   En iyi rota: [58, 134, 106]
+      -> #1 (Tekrar 2, Seed=845324563): Delay=12.57 ms | Rel=0.88142 | Bottleneck=315.00 Mbps | Maliyet=10.9464
+      -> #2 (Tekrar 3, Seed=845327564): Delay=12.03 ms | Rel=0.85940 | Bottleneck=239.00 Mbps | Maliyet=12.1610
+      -> #3 (Tekrar 1, Seed=845321562): Delay=17.34 ms | Rel=0.86019 | Bottleneck=148.00 Mbps | Maliyet=14.7934
+      -> #4 (Tekrar 5, Seed=845333566): Delay=24.49 ms | Rel=0.87806 | Bottleneck=153.00 Mbps | Maliyet=16.5927
+      -> #5 (Tekrar 4, Seed=845330565): Delay=28.05 ms | Rel=0.88630 | Bottleneck=282.00 Mbps | Maliyet=17.2672
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 15.6998
+   Süre (sn) -> Ortalama: 3.8475, En iyi: 3.5207, En kötü: 4.1191
+   Maliyet -> Ortalama: 15.6998, Std: 1.4062, En iyi: 13.6347, En kötü: 17.3820
+   En iyi rota: [58, 202, 106]
+      -> #1 (Tekrar 4, Seed=845322597): Delay=22.57 ms | Rel=0.90631 | Bottleneck=506.00 Mbps | Maliyet=13.6347
+      -> #2 (Tekrar 1, Seed=845319570): Delay=25.81 ms | Rel=0.90807 | Bottleneck=378.00 Mbps | Maliyet=15.1462
+      -> #3 (Tekrar 5, Seed=845323606): Delay=21.34 ms | Rel=0.83935 | Bottleneck=902.00 Mbps | Maliyet=15.9800
+      -> #4 (Tekrar 2, Seed=845320579): Delay=27.91 ms | Rel=0.89237 | Bottleneck=491.00 Mbps | Maliyet=16.3558
+      -> #5 (Tekrar 3, Seed=845321588): Delay=18.49 ms | Rel=0.80025 | Bottleneck=364.00 Mbps | Maliyet=17.3820
+
+=== Deney 08: S=64, D=237, B=98.00 Mbps ===
+
+[Genetik Algoritma] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 8.6563
+   Süre (sn) -> Ortalama: 1.1101, En iyi: 1.0690, En kötü: 1.1550
+   Maliyet -> Ortalama: 8.6563, Std: 0.0000, En iyi: 8.6563, En kötü: 8.6563
+   En iyi rota: [64, 237]
+      -> #1 (Tekrar 1, Seed=2795894774): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+      -> #2 (Tekrar 2, Seed=2795895783): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+      -> #3 (Tekrar 3, Seed=2795896792): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+      -> #4 (Tekrar 4, Seed=2795897801): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+      -> #5 (Tekrar 5, Seed=2795898810): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 9.2833
+   Süre (sn) -> Ortalama: 0.3345, En iyi: 0.2791, En kötü: 0.4155
+   Maliyet -> Ortalama: 9.2833, Std: 1.4019, En iyi: 8.6563, En kötü: 11.7910
+   En iyi rota: [64, 237]
+      -> #1 (Tekrar 1, Seed=2795896766): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+      -> #2 (Tekrar 2, Seed=2795899767): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+      -> #3 (Tekrar 4, Seed=2795905769): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+      -> #4 (Tekrar 5, Seed=2795908770): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+      -> #5 (Tekrar 3, Seed=2795902768): Delay=10.61 ms | Rel=0.86893 | Bottleneck=152.00 Mbps | Maliyet=11.7910
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 11.1213
+   Süre (sn) -> Ortalama: 1.1798, En iyi: 0.8154, En kötü: 1.5958
+   Maliyet -> Ortalama: 11.1213, Std: 2.8293, En iyi: 8.6563, En kötü: 15.2862
+   En iyi rota: [64, 237]
+      -> #1 (Tekrar 3, Seed=2795899774): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+      -> #2 (Tekrar 4, Seed=2795901777): Delay=9.00 ms | Rel=0.88744 | Bottleneck=715.00 Mbps | Maliyet=8.6563
+      -> #3 (Tekrar 2, Seed=2795897771): Delay=7.91 ms | Rel=0.85318 | Bottleneck=288.00 Mbps | Maliyet=10.4483
+      -> #4 (Tekrar 5, Seed=2795903780): Delay=11.16 ms | Rel=0.85693 | Bottleneck=152.00 Mbps | Maliyet=12.5593
+      -> #5 (Tekrar 1, Seed=2795895768): Delay=14.20 ms | Rel=0.80566 | Bottleneck=401.00 Mbps | Maliyet=15.2862
+
+=== Deney 09: S=77, D=67, B=135.00 Mbps ===
+
+[Genetik Algoritma] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 11.7989
+   Süre (sn) -> Ortalama: 4.0350, En iyi: 3.8500, En kötü: 4.3330
+   Maliyet -> Ortalama: 11.7989, Std: 2.1652, En iyi: 8.6063, En kötü: 14.6992
+   En iyi rota: [77, 218, 67]
+      -> #1 (Tekrar 3, Seed=1909017083): Delay=12.22 ms | Rel=0.92906 | Bottleneck=484.00 Mbps | Maliyet=8.6063
+      -> #2 (Tekrar 1, Seed=1909015065): Delay=16.48 ms | Rel=0.89742 | Bottleneck=568.00 Mbps | Maliyet=11.6148
+      -> #3 (Tekrar 4, Seed=1909018092): Delay=18.21 ms | Rel=0.90018 | Bottleneck=665.00 Mbps | Maliyet=12.0370
+      -> #4 (Tekrar 5, Seed=1909019101): Delay=18.21 ms | Rel=0.90018 | Bottleneck=665.00 Mbps | Maliyet=12.0370
+      -> #5 (Tekrar 2, Seed=1909016074): Delay=18.97 ms | Rel=0.87804 | Bottleneck=176.00 Mbps | Maliyet=14.6992
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 12.3150
+   Süre (sn) -> Ortalama: 1.3635, En iyi: 0.9824, En kötü: 1.6437
+   Maliyet -> Ortalama: 12.3150, Std: 2.5140, En iyi: 9.1654, En kötü: 14.4627
+   En iyi rota: [77, 136, 67]
+      -> #1 (Tekrar 5, Seed=1909024071): Delay=11.16 ms | Rel=0.90731 | Bottleneck=332.00 Mbps | Maliyet=9.1654
+      -> #2 (Tekrar 1, Seed=1909016059): Delay=10.05 ms | Rel=0.88891 | Bottleneck=266.00 Mbps | Maliyet=10.0270
+      -> #3 (Tekrar 4, Seed=1909022068): Delay=15.27 ms | Rel=0.84409 | Bottleneck=568.00 Mbps | Maliyet=13.7363
+      -> #4 (Tekrar 2, Seed=1909018062): Delay=12.93 ms | Rel=0.82533 | Bottleneck=253.00 Mbps | Maliyet=14.1837
+      -> #5 (Tekrar 3, Seed=1909020065): Delay=14.04 ms | Rel=0.82434 | Bottleneck=310.00 Mbps | Maliyet=14.4627
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 12.3644
+   Süre (sn) -> Ortalama: 0.4099, En iyi: 0.3518, En kötü: 0.4790
+   Maliyet -> Ortalama: 12.3644, Std: 0.7184, En iyi: 11.5469, En kötü: 13.2348
+   En iyi rota: [77, 209, 67]
+      -> #1 (Tekrar 4, Seed=1909026060): Delay=12.22 ms | Rel=0.86645 | Bottleneck=395.00 Mbps | Maliyet=11.5469
+      -> #2 (Tekrar 1, Seed=1909017057): Delay=12.58 ms | Rel=0.84866 | Bottleneck=963.00 Mbps | Maliyet=12.0048
+      -> #3 (Tekrar 3, Seed=1909023059): Delay=18.21 ms | Rel=0.90018 | Bottleneck=665.00 Mbps | Maliyet=12.0370
+      -> #4 (Tekrar 5, Seed=1909029061): Delay=17.06 ms | Rel=0.87099 | Bottleneck=457.00 Mbps | Maliyet=12.9984
+      -> #5 (Tekrar 2, Seed=1909020058): Delay=20.55 ms | Rel=0.90007 | Bottleneck=397.00 Mbps | Maliyet=13.2348
+
+=== Deney 10: S=82, D=39, B=19.00 Mbps ===
+
+[Genetik Algoritma] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 9.9145
+   Süre (sn) -> Ortalama: 0.9817, En iyi: 0.8890, En kötü: 1.1167
+   Maliyet -> Ortalama: 9.9145, Std: 0.0000, En iyi: 9.9145, En kötü: 9.9145
+   En iyi rota: [82, 39]
+      -> #1 (Tekrar 1, Seed=2358278252): Delay=13.00 ms | Rel=0.89749 | Bottleneck=515.00 Mbps | Maliyet=9.9145
+      -> #2 (Tekrar 2, Seed=2358279261): Delay=13.00 ms | Rel=0.89749 | Bottleneck=515.00 Mbps | Maliyet=9.9145
+      -> #3 (Tekrar 3, Seed=2358280270): Delay=13.00 ms | Rel=0.89749 | Bottleneck=515.00 Mbps | Maliyet=9.9145
+      -> #4 (Tekrar 4, Seed=2358281279): Delay=13.00 ms | Rel=0.89749 | Bottleneck=515.00 Mbps | Maliyet=9.9145
+      -> #5 (Tekrar 5, Seed=2358282288): Delay=13.00 ms | Rel=0.89749 | Bottleneck=515.00 Mbps | Maliyet=9.9145
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 10.3234
+   Süre (sn) -> Ortalama: 1.1509, En iyi: 0.7666, En kötü: 1.4960
+   Maliyet -> Ortalama: 10.3234, Std: 1.4605, En iyi: 9.1818, En kötü: 12.7555
+   En iyi rota: [82, 97, 39]
+      -> #1 (Tekrar 4, Seed=2358285255): Delay=7.54 ms | Rel=0.89170 | Bottleneck=148.00 Mbps | Maliyet=9.1818
+      -> #2 (Tekrar 5, Seed=2358287258): Delay=7.54 ms | Rel=0.89170 | Bottleneck=148.00 Mbps | Maliyet=9.1818
+      -> #3 (Tekrar 1, Seed=2358279246): Delay=10.70 ms | Rel=0.87541 | Bottleneck=561.00 Mbps | Maliyet=10.2489
+      -> #4 (Tekrar 3, Seed=2358283252): Delay=10.70 ms | Rel=0.87541 | Bottleneck=561.00 Mbps | Maliyet=10.2489
+      -> #5 (Tekrar 2, Seed=2358281249): Delay=16.12 ms | Rel=0.87164 | Bottleneck=373.00 Mbps | Maliyet=12.7555
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 11.7402
+   Süre (sn) -> Ortalama: 0.2729, En iyi: 0.2623, En kötü: 0.2811
+   Maliyet -> Ortalama: 11.7402, Std: 4.0824, En iyi: 9.9145, En kötü: 19.0431
+   En iyi rota: [82, 39]
+      -> #1 (Tekrar 2, Seed=2358283245): Delay=13.00 ms | Rel=0.89749 | Bottleneck=515.00 Mbps | Maliyet=9.9145
+      -> #2 (Tekrar 3, Seed=2358286246): Delay=13.00 ms | Rel=0.89749 | Bottleneck=515.00 Mbps | Maliyet=9.9145
+      -> #3 (Tekrar 4, Seed=2358289247): Delay=13.00 ms | Rel=0.89749 | Bottleneck=515.00 Mbps | Maliyet=9.9145
+      -> #4 (Tekrar 5, Seed=2358292248): Delay=13.00 ms | Rel=0.89749 | Bottleneck=515.00 Mbps | Maliyet=9.9145
+      -> #5 (Tekrar 1, Seed=2358280244): Delay=28.27 ms | Rel=0.85115 | Bottleneck=305.00 Mbps | Maliyet=19.0431
+
+=== Deney 11: S=85, D=180, B=24.00 Mbps ===
+
+[Karınca Kolonisi] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 11.3651
+   Süre (sn) -> Ortalama: 1.1566, En iyi: 1.0213, En kötü: 1.4431
+   Maliyet -> Ortalama: 11.3651, Std: 2.8310, En iyi: 9.9664, En kötü: 16.4115
+   En iyi rota: [85, 230, 180]
+      -> #1 (Tekrar 1, Seed=4198494590): Delay=7.28 ms | Rel=0.84863 | Bottleneck=797.00 Mbps | Maliyet=9.9664
+      -> #2 (Tekrar 2, Seed=4198496593): Delay=7.28 ms | Rel=0.84863 | Bottleneck=797.00 Mbps | Maliyet=9.9664
+      -> #3 (Tekrar 4, Seed=4198500599): Delay=7.28 ms | Rel=0.84863 | Bottleneck=797.00 Mbps | Maliyet=9.9664
+      -> #4 (Tekrar 3, Seed=4198498596): Delay=10.35 ms | Rel=0.86469 | Bottleneck=645.00 Mbps | Maliyet=10.5149
+      -> #5 (Tekrar 5, Seed=4198502602): Delay=18.76 ms | Rel=0.82636 | Bottleneck=395.00 Mbps | Maliyet=16.4115
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 12.6843
+   Süre (sn) -> Ortalama: 0.3476, En iyi: 0.3175, En kötü: 0.3918
+   Maliyet -> Ortalama: 12.6843, Std: 3.3824, En iyi: 9.9664, En kötü: 18.2812
+   En iyi rota: [85, 230, 180]
+      -> #1 (Tekrar 1, Seed=4198495588): Delay=7.28 ms | Rel=0.84863 | Bottleneck=797.00 Mbps | Maliyet=9.9664
+      -> #2 (Tekrar 5, Seed=4198507592): Delay=11.03 ms | Rel=0.86596 | Bottleneck=716.00 Mbps | Maliyet=10.6594
+      -> #3 (Tekrar 2, Seed=4198498589): Delay=12.75 ms | Rel=0.87167 | Bottleneck=665.00 Mbps | Maliyet=11.1201
+      -> #4 (Tekrar 3, Seed=4198501590): Delay=16.82 ms | Rel=0.89602 | Bottleneck=103.00 Mbps | Maliyet=13.3943
+      -> #5 (Tekrar 4, Seed=4198504591): Delay=27.44 ms | Rel=0.85655 | Bottleneck=237.00 Mbps | Maliyet=18.2812
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 13.5162
+   Süre (sn) -> Ortalama: 3.9551, En iyi: 3.8894, En kötü: 4.0623
+   Maliyet -> Ortalama: 13.5162, Std: 3.3943, En iyi: 10.5149, En kötü: 18.1210
+   En iyi rota: [85, 2, 180]
+      -> #1 (Tekrar 1, Seed=4198493596): Delay=10.35 ms | Rel=0.86469 | Bottleneck=645.00 Mbps | Maliyet=10.5149
+      -> #2 (Tekrar 3, Seed=4198495614): Delay=12.75 ms | Rel=0.87167 | Bottleneck=665.00 Mbps | Maliyet=11.1201
+      -> #3 (Tekrar 2, Seed=4198494605): Delay=14.27 ms | Rel=0.88327 | Bottleneck=246.00 Mbps | Maliyet=11.6969
+      -> #4 (Tekrar 4, Seed=4198496623): Delay=24.46 ms | Rel=0.86451 | Bottleneck=767.00 Mbps | Maliyet=16.1281
+      -> #5 (Tekrar 5, Seed=4198497632): Delay=27.98 ms | Rel=0.86217 | Bottleneck=490.00 Mbps | Maliyet=18.1210
+
+=== Deney 12: S=87, D=193, B=98.00 Mbps ===
+
+[Genetik Algoritma] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 8.0520
+   Süre (sn) -> Ortalama: 1.0723, En iyi: 1.0043, En kötü: 1.1312
+   Maliyet -> Ortalama: 8.0520, Std: 0.0000, En iyi: 8.0520, En kötü: 8.0520
+   En iyi rota: [87, 193]
+      -> #1 (Tekrar 1, Seed=3822380824): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+      -> #2 (Tekrar 2, Seed=3822381833): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+      -> #3 (Tekrar 3, Seed=3822382842): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+      -> #4 (Tekrar 4, Seed=3822383851): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+      -> #5 (Tekrar 5, Seed=3822384860): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 8.0520
+   Süre (sn) -> Ortalama: 0.2886, En iyi: 0.2415, En kötü: 0.3174
+   Maliyet -> Ortalama: 8.0520, Std: 0.0000, En iyi: 8.0520, En kötü: 8.0520
+   En iyi rota: [87, 193]
+      -> #1 (Tekrar 1, Seed=3822382816): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+      -> #2 (Tekrar 2, Seed=3822385817): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+      -> #3 (Tekrar 3, Seed=3822388818): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+      -> #4 (Tekrar 4, Seed=3822391819): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+      -> #5 (Tekrar 5, Seed=3822394820): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 13.9972
+   Süre (sn) -> Ortalama: 2.5284, En iyi: 1.3546, En kötü: 4.5357
+   Maliyet -> Ortalama: 13.9972, Std: 3.7156, En iyi: 8.0520, En kötü: 16.6275
+   En iyi rota: [87, 193]
+      -> #1 (Tekrar 3, Seed=3822385824): Delay=14.00 ms | Rel=0.94974 | Bottleneck=514.00 Mbps | Maliyet=8.0520
+      -> #2 (Tekrar 5, Seed=3822389830): Delay=14.72 ms | Rel=0.85416 | Bottleneck=906.00 Mbps | Maliyet=12.6153
+      -> #3 (Tekrar 1, Seed=3822381818): Delay=14.59 ms | Rel=0.79458 | Bottleneck=332.00 Mbps | Maliyet=16.2488
+      -> #4 (Tekrar 4, Seed=3822387827): Delay=16.78 ms | Rel=0.81085 | Bottleneck=440.00 Mbps | Maliyet=16.4425
+      -> #5 (Tekrar 2, Seed=3822383821): Delay=16.92 ms | Rel=0.81378 | Bottleneck=300.00 Mbps | Maliyet=16.6275
+
+=== Deney 13: S=94, D=68, B=115.00 Mbps ===
+
+[Q-Learning] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 12.5289
+   Süre (sn) -> Ortalama: 0.2822, En iyi: 0.2611, En kötü: 0.2993
+   Maliyet -> Ortalama: 12.5289, Std: 2.4659, En iyi: 10.4496, En kötü: 16.1422
+   En iyi rota: [94, 47, 68]
+      -> #1 (Tekrar 1, Seed=2840473220): Delay=12.54 ms | Rel=0.88440 | Bottleneck=628.00 Mbps | Maliyet=10.4496
+      -> #2 (Tekrar 4, Seed=2840482223): Delay=13.91 ms | Rel=0.88713 | Bottleneck=653.00 Mbps | Maliyet=10.9633
+      -> #3 (Tekrar 2, Seed=2840476221): Delay=12.76 ms | Rel=0.89623 | Bottleneck=163.00 Mbps | Maliyet=11.0460
+      -> #4 (Tekrar 3, Seed=2840479222): Delay=16.43 ms | Rel=0.85022 | Bottleneck=277.00 Mbps | Maliyet=14.0436
+      -> #5 (Tekrar 5, Seed=2840485224): Delay=24.22 ms | Rel=0.86469 | Bottleneck=563.00 Mbps | Maliyet=16.1422
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 14.9118
+   Süre (sn) -> Ortalama: 3.8694, En iyi: 3.7598, En kötü: 4.0965
+   Maliyet -> Ortalama: 14.9118, Std: 2.8786, En iyi: 11.0460, En kötü: 18.7476
+   En iyi rota: [94, 118, 68]
+      -> #1 (Tekrar 5, Seed=2840475264): Delay=12.76 ms | Rel=0.89623 | Bottleneck=163.00 Mbps | Maliyet=11.0460
+      -> #2 (Tekrar 1, Seed=2840471228): Delay=14.20 ms | Rel=0.83851 | Bottleneck=192.00 Mbps | Maliyet=14.1596
+      -> #3 (Tekrar 4, Seed=2840474255): Delay=14.20 ms | Rel=0.83851 | Bottleneck=192.00 Mbps | Maliyet=14.1596
+      -> #4 (Tekrar 3, Seed=2840473246): Delay=25.97 ms | Rel=0.87058 | Bottleneck=637.00 Mbps | Maliyet=16.4465
+      -> #5 (Tekrar 2, Seed=2840472237): Delay=26.82 ms | Rel=0.84074 | Bottleneck=269.00 Mbps | Maliyet=18.7476
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 15.1364
+   Süre (sn) -> Ortalama: 1.3723, En iyi: 0.9404, En kötü: 1.9270
+   Maliyet -> Ortalama: 15.1364, Std: 3.7525, En iyi: 10.8849, En kötü: 18.8097
+   En iyi rota: [94, 172, 68]
+      -> #1 (Tekrar 3, Seed=2840476228): Delay=10.52 ms | Rel=0.86040 | Bottleneck=475.00 Mbps | Maliyet=10.8849
+      -> #2 (Tekrar 1, Seed=2840472222): Delay=11.89 ms | Rel=0.85913 | Bottleneck=676.00 Mbps | Maliyet=11.3646
+      -> #3 (Tekrar 2, Seed=2840474225): Delay=23.98 ms | Rel=0.85661 | Bottleneck=445.00 Mbps | Maliyet=16.5801
+      -> #4 (Tekrar 4, Seed=2840478231): Delay=15.39 ms | Rel=0.76555 | Bottleneck=331.00 Mbps | Maliyet=18.0427
+      -> #5 (Tekrar 5, Seed=2840480234): Delay=16.26 ms | Rel=0.75367 | Bottleneck=502.00 Mbps | Maliyet=18.8097
+
+=== Deney 14: S=97, D=7, B=45.00 Mbps ===
+
+[Q-Learning] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 12.6280
+   Süre (sn) -> Ortalama: 0.2724, En iyi: 0.2550, En kötü: 0.2941
+   Maliyet -> Ortalama: 12.6280, Std: 1.6752, En iyi: 10.7591, En kötü: 14.0165
+   En iyi rota: [97, 87, 7]
+      -> #1 (Tekrar 2, Seed=3982030270): Delay=10.20 ms | Rel=0.85851 | Bottleneck=593.00 Mbps | Maliyet=10.7591
+      -> #2 (Tekrar 3, Seed=3982033271): Delay=18.18 ms | Rel=0.92602 | Bottleneck=709.00 Mbps | Maliyet=10.8389
+      -> #3 (Tekrar 5, Seed=3982039273): Delay=15.84 ms | Rel=0.84609 | Bottleneck=528.00 Mbps | Maliyet=13.6436
+      -> #4 (Tekrar 4, Seed=3982036272): Delay=20.30 ms | Rel=0.88432 | Bottleneck=360.00 Mbps | Maliyet=13.8817
+      -> #5 (Tekrar 1, Seed=3982027269): Delay=16.97 ms | Rel=0.85769 | Bottleneck=309.00 Mbps | Maliyet=14.0165
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 13.1501
+   Süre (sn) -> Ortalama: 3.7922, En iyi: 3.4106, En kötü: 3.9563
+   Maliyet -> Ortalama: 13.1501, Std: 1.2761, En iyi: 11.5077, En kötü: 14.4806
+   En iyi rota: [97, 142, 7]
+      -> #1 (Tekrar 2, Seed=3982026286): Delay=19.62 ms | Rel=0.92785 | Bottleneck=580.00 Mbps | Maliyet=11.5077
+      -> #2 (Tekrar 3, Seed=3982027295): Delay=15.93 ms | Rel=0.89414 | Bottleneck=232.00 Mbps | Maliyet=12.1099
+      -> #3 (Tekrar 4, Seed=3982028304): Delay=18.63 ms | Rel=0.87552 | Bottleneck=436.00 Mbps | Maliyet=13.6678
+      -> #4 (Tekrar 5, Seed=3982029313): Delay=20.57 ms | Rel=0.88068 | Bottleneck=446.00 Mbps | Maliyet=13.9843
+      -> #5 (Tekrar 1, Seed=3982025277): Delay=19.20 ms | Rel=0.86028 | Bottleneck=478.00 Mbps | Maliyet=14.4806
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 14.8092
+   Süre (sn) -> Ortalama: 1.1157, En iyi: 0.6858, En kötü: 1.7392
+   Maliyet -> Ortalama: 14.8092, Std: 3.8693, En iyi: 10.7591, En kötü: 20.4141
+   En iyi rota: [97, 87, 7]
+      -> #1 (Tekrar 3, Seed=3982030277): Delay=10.20 ms | Rel=0.85851 | Bottleneck=593.00 Mbps | Maliyet=10.7591
+      -> #2 (Tekrar 5, Seed=3982034283): Delay=11.98 ms | Rel=0.86002 | Bottleneck=436.00 Mbps | Maliyet=11.5533
+      -> #3 (Tekrar 4, Seed=3982032280): Delay=13.43 ms | Rel=0.79507 | Bottleneck=373.00 Mbps | Maliyet=15.5583
+      -> #4 (Tekrar 2, Seed=3982028274): Delay=17.61 ms | Rel=0.81922 | Bottleneck=753.00 Mbps | Maliyet=15.7610
+      -> #5 (Tekrar 1, Seed=3982026271): Delay=18.27 ms | Rel=0.74015 | Bottleneck=568.00 Mbps | Maliyet=20.4141
+
+=== Deney 15: S=98, D=70, B=144.00 Mbps ===
+
+[Q-Learning] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 11.1328
+   Süre (sn) -> Ortalama: 0.2797, En iyi: 0.2619, En kötü: 0.3067
+   Maliyet -> Ortalama: 11.1328, Std: 3.1788, En iyi: 7.8776, En kötü: 16.2377
+   En iyi rota: [98, 81, 70]
+      -> #1 (Tekrar 5, Seed=2276542690): Delay=11.11 ms | Rel=0.93556 | Bottleneck=368.00 Mbps | Maliyet=7.8776
+      -> #2 (Tekrar 2, Seed=2276533687): Delay=15.47 ms | Rel=0.94703 | Bottleneck=246.00 Mbps | Maliyet=9.4853
+      -> #3 (Tekrar 3, Seed=2276536688): Delay=8.76 ms | Rel=0.88222 | Bottleneck=144.00 Mbps | Maliyet=10.3146
+      -> #4 (Tekrar 1, Seed=2276530686): Delay=20.07 ms | Rel=0.92488 | Bottleneck=569.00 Mbps | Maliyet=11.7487
+      -> #5 (Tekrar 4, Seed=2276539689): Delay=24.44 ms | Rel=0.86778 | Bottleneck=397.00 Mbps | Maliyet=16.2377
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 11.2024
+   Süre (sn) -> Ortalama: 3.8024, En iyi: 3.0092, En kötü: 4.1861
+   Maliyet -> Ortalama: 11.2024, Std: 2.6371, En iyi: 7.8776, En kötü: 14.6232
+   En iyi rota: [98, 81, 70]
+      -> #1 (Tekrar 1, Seed=2276528694): Delay=11.11 ms | Rel=0.93556 | Bottleneck=368.00 Mbps | Maliyet=7.8776
+      -> #2 (Tekrar 5, Seed=2276532730): Delay=15.47 ms | Rel=0.94703 | Bottleneck=246.00 Mbps | Maliyet=9.4853
+      -> #3 (Tekrar 3, Seed=2276530712): Delay=19.18 ms | Rel=0.93404 | Bottleneck=268.00 Mbps | Maliyet=11.3813
+      -> #4 (Tekrar 4, Seed=2276531721): Delay=21.91 ms | Rel=0.92046 | Bottleneck=583.00 Mbps | Maliyet=12.6448
+      -> #5 (Tekrar 2, Seed=2276529703): Delay=20.85 ms | Rel=0.87655 | Bottleneck=429.00 Mbps | Maliyet=14.6232
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 11.5466
+   Süre (sn) -> Ortalama: 1.1242, En iyi: 0.9732, En kötü: 1.2797
+   Maliyet -> Ortalama: 11.5466, Std: 1.8054, En iyi: 9.6850, En kötü: 14.5210
+   En iyi rota: [98, 113, 70]
+      -> #1 (Tekrar 1, Seed=2276529688): Delay=12.52 ms | Rel=0.90165 | Bottleneck=744.00 Mbps | Maliyet=9.6850
+      -> #2 (Tekrar 2, Seed=2276531691): Delay=11.86 ms | Rel=0.88831 | Bottleneck=368.00 Mbps | Maliyet=10.7198
+      -> #3 (Tekrar 4, Seed=2276535697): Delay=19.18 ms | Rel=0.93404 | Bottleneck=268.00 Mbps | Maliyet=11.3813
+      -> #4 (Tekrar 3, Seed=2276533694): Delay=13.64 ms | Rel=0.87965 | Bottleneck=598.00 Mbps | Maliyet=11.4257
+      -> #5 (Tekrar 5, Seed=2276537700): Delay=18.12 ms | Rel=0.86530 | Bottleneck=368.00 Mbps | Maliyet=14.5210
+
+=== Deney 16: S=103, D=242, B=189.00 Mbps ===
+
+[Genetik Algoritma] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 5.4479
+   Süre (sn) -> Ortalama: 1.0814, En iyi: 1.0322, En kötü: 1.1699
+   Maliyet -> Ortalama: 5.4479, Std: 0.0000, En iyi: 5.4479, En kötü: 5.4479
+   En iyi rota: [103, 242]
+      -> #1 (Tekrar 1, Seed=2762198006): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #2 (Tekrar 2, Seed=2762199015): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #3 (Tekrar 3, Seed=2762200024): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #4 (Tekrar 4, Seed=2762201033): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #5 (Tekrar 5, Seed=2762202042): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 5.4479
+   Süre (sn) -> Ortalama: 0.6275, En iyi: 0.4580, En kötü: 0.8845
+   Maliyet -> Ortalama: 5.4479, Std: 0.0000, En iyi: 5.4479, En kötü: 5.4479
+   En iyi rota: [103, 242]
+      -> #1 (Tekrar 1, Seed=2762199000): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #2 (Tekrar 2, Seed=2762201003): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #3 (Tekrar 3, Seed=2762203006): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #4 (Tekrar 4, Seed=2762205009): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #5 (Tekrar 5, Seed=2762207012): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 5.4479
+   Süre (sn) -> Ortalama: 0.3261, En iyi: 0.2816, En kötü: 0.3710
+   Maliyet -> Ortalama: 5.4479, Std: 0.0000, En iyi: 5.4479, En kötü: 5.4479
+   En iyi rota: [103, 242]
+      -> #1 (Tekrar 1, Seed=2762199998): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #2 (Tekrar 2, Seed=2762202999): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #3 (Tekrar 3, Seed=2762206000): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #4 (Tekrar 4, Seed=2762209001): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+      -> #5 (Tekrar 5, Seed=2762212002): Delay=5.00 ms | Rel=0.92464 | Bottleneck=637.00 Mbps | Maliyet=5.4479
+
+=== Deney 17: S=108, D=129, B=84.00 Mbps ===
+
+[Q-Learning] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 14.9375
+   Süre (sn) -> Ortalama: 0.2621, En iyi: 0.2598, En kötü: 0.2664
+   Maliyet -> Ortalama: 14.9375, Std: 1.8360, En iyi: 12.9553, En kötü: 16.9867
+   En iyi rota: [108, 202, 129]
+      -> #1 (Tekrar 3, Seed=745343857): Delay=19.57 ms | Rel=0.89277 | Bottleneck=601.00 Mbps | Maliyet=12.9553
+      -> #2 (Tekrar 4, Seed=745346858): Delay=11.72 ms | Rel=0.82030 | Bottleneck=642.00 Mbps | Maliyet=13.1511
+      -> #3 (Tekrar 1, Seed=745337855): Delay=18.72 ms | Rel=0.86166 | Bottleneck=144.00 Mbps | Maliyet=15.2113
+      -> #4 (Tekrar 2, Seed=745340856): Delay=23.47 ms | Rel=0.85677 | Bottleneck=466.00 Mbps | Maliyet=16.3829
+      -> #5 (Tekrar 5, Seed=745349859): Delay=20.20 ms | Rel=0.81434 | Bottleneck=497.00 Mbps | Maliyet=16.9867
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 15.6586
+   Süre (sn) -> Ortalama: 1.2220, En iyi: 0.5930, En kötü: 1.7902
+   Maliyet -> Ortalama: 15.6586, Std: 2.7136, En iyi: 13.1511, En kötü: 19.1040
+   En iyi rota: [108, 68, 129]
+      -> #1 (Tekrar 3, Seed=745340863): Delay=11.72 ms | Rel=0.82030 | Bottleneck=642.00 Mbps | Maliyet=13.1511
+      -> #2 (Tekrar 4, Seed=745342866): Delay=11.72 ms | Rel=0.82030 | Bottleneck=642.00 Mbps | Maliyet=13.1511
+      -> #3 (Tekrar 1, Seed=745336857): Delay=16.88 ms | Rel=0.83289 | Bottleneck=294.00 Mbps | Maliyet=15.0695
+      -> #4 (Tekrar 2, Seed=745338860): Delay=16.43 ms | Rel=0.79315 | Bottleneck=256.00 Mbps | Maliyet=17.8175
+      -> #5 (Tekrar 5, Seed=745344869): Delay=20.93 ms | Rel=0.77731 | Bottleneck=819.00 Mbps | Maliyet=19.1040
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 17.2263
+   Süre (sn) -> Ortalama: 3.2125, En iyi: 2.9320, En kötü: 3.6172
+   Maliyet -> Ortalama: 17.2263, Std: 2.2633, En iyi: 15.0543, En kötü: 19.9212
+   En iyi rota: [108, 58, 129]
+      -> #1 (Tekrar 1, Seed=745335863): Delay=17.01 ms | Rel=0.82455 | Bottleneck=630.00 Mbps | Maliyet=15.0543
+      -> #2 (Tekrar 4, Seed=745338890): Delay=16.88 ms | Rel=0.83289 | Bottleneck=294.00 Mbps | Maliyet=15.0695
+      -> #3 (Tekrar 5, Seed=745339899): Delay=18.86 ms | Rel=0.82576 | Bottleneck=132.00 Mbps | Maliyet=16.9202
+      -> #4 (Tekrar 3, Seed=745337881): Delay=25.52 ms | Rel=0.84507 | Bottleneck=127.00 Mbps | Maliyet=19.1663
+      -> #5 (Tekrar 2, Seed=745336872): Delay=28.09 ms | Rel=0.82118 | Bottleneck=662.00 Mbps | Maliyet=19.9212
+
+=== Deney 18: S=142, D=136, B=82.00 Mbps ===
+
+[Karınca Kolonisi] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 3.2995
+   Süre (sn) -> Ortalama: 0.4682, En iyi: 0.3422, En kötü: 0.5690
+   Maliyet -> Ortalama: 3.2995, Std: 0.0000, En iyi: 3.2995, En kötü: 3.2995
+   En iyi rota: [142, 136]
+      -> #1 (Tekrar 1, Seed=2247894934): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #2 (Tekrar 2, Seed=2247896937): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #3 (Tekrar 3, Seed=2247898940): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #4 (Tekrar 4, Seed=2247900943): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #5 (Tekrar 5, Seed=2247902946): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 3.2995
+   Süre (sn) -> Ortalama: 0.2206, En iyi: 0.2140, En kötü: 0.2355
+   Maliyet -> Ortalama: 3.2995, Std: 0.0000, En iyi: 3.2995, En kötü: 3.2995
+   En iyi rota: [142, 136]
+      -> #1 (Tekrar 1, Seed=2247895932): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #2 (Tekrar 2, Seed=2247898933): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #3 (Tekrar 3, Seed=2247901934): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #4 (Tekrar 4, Seed=2247904935): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #5 (Tekrar 5, Seed=2247907936): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 4.2334
+   Süre (sn) -> Ortalama: 1.2680, En iyi: 0.7722, En kötü: 3.0099
+   Maliyet -> Ortalama: 4.2334, Std: 2.0884, En iyi: 3.2995, En kötü: 7.9693
+   En iyi rota: [142, 136]
+      -> #1 (Tekrar 1, Seed=2247893940): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #2 (Tekrar 3, Seed=2247895958): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #3 (Tekrar 4, Seed=2247896967): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #4 (Tekrar 5, Seed=2247897976): Delay=4.00 ms | Rel=0.96536 | Bottleneck=691.00 Mbps | Maliyet=3.2995
+      -> #5 (Tekrar 2, Seed=2247894949): Delay=11.99 ms | Rel=0.94703 | Bottleneck=382.00 Mbps | Maliyet=7.9693
+
+=== Deney 19: S=155, D=81, B=59.00 Mbps ===
+
+[Karınca Kolonisi] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 11.5361
+   Süre (sn) -> Ortalama: 0.9186, En iyi: 0.7473, En kötü: 1.1133
+   Maliyet -> Ortalama: 11.5361, Std: 0.6881, En iyi: 10.6845, En kötü: 12.6096
+   En iyi rota: [155, 103, 8, 81]
+      -> #1 (Tekrar 4, Seed=4199211424): Delay=11.75 ms | Rel=0.88827 | Bottleneck=295.00 Mbps | Maliyet=10.6845
+      -> #2 (Tekrar 1, Seed=4199205415): Delay=9.76 ms | Rel=0.86196 | Bottleneck=144.00 Mbps | Maliyet=11.4622
+      -> #3 (Tekrar 2, Seed=4199207418): Delay=9.76 ms | Rel=0.86196 | Bottleneck=144.00 Mbps | Maliyet=11.4622
+      -> #4 (Tekrar 3, Seed=4199209421): Delay=9.76 ms | Rel=0.86196 | Bottleneck=144.00 Mbps | Maliyet=11.4622
+      -> #5 (Tekrar 5, Seed=4199213427): Delay=13.88 ms | Rel=0.86407 | Bottleneck=270.00 Mbps | Maliyet=12.6096
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 13.8070
+   Süre (sn) -> Ortalama: 0.2508, En iyi: 0.2402, En kötü: 0.2599
+   Maliyet -> Ortalama: 13.8070, Std: 0.9465, En iyi: 13.3321, En kötü: 15.4976
+   En iyi rota: [155, 209, 81]
+      -> #1 (Tekrar 2, Seed=4199209414): Delay=13.22 ms | Rel=0.86182 | Bottleneck=158.00 Mbps | Maliyet=13.3321
+      -> #2 (Tekrar 5, Seed=4199218417): Delay=13.22 ms | Rel=0.86182 | Bottleneck=158.00 Mbps | Maliyet=13.3321
+      -> #3 (Tekrar 1, Seed=4199206413): Delay=16.30 ms | Rel=0.85913 | Bottleneck=409.00 Mbps | Maliyet=13.4366
+      -> #4 (Tekrar 3, Seed=4199212415): Delay=16.30 ms | Rel=0.85913 | Bottleneck=409.00 Mbps | Maliyet=13.4366
+      -> #5 (Tekrar 4, Seed=4199215416): Delay=19.53 ms | Rel=0.84793 | Bottleneck=335.00 Mbps | Maliyet=15.4976
+
+[Genetik Algoritma] Başarı: 5/5 | Avg Cost: 14.2463
+   Süre (sn) -> Ortalama: 3.0938, En iyi: 2.8935, En kötü: 3.2190
+   Maliyet -> Ortalama: 14.2463, Std: 3.3030, En iyi: 11.0526, En kötü: 18.8820
+   En iyi rota: [155, 103, 187, 81]
+      -> #1 (Tekrar 4, Seed=4199207448): Delay=14.31 ms | Rel=0.89184 | Bottleneck=721.00 Mbps | Maliyet=11.0526
+      -> #2 (Tekrar 1, Seed=4199204421): Delay=12.67 ms | Rel=0.88517 | Bottleneck=144.00 Mbps | Maliyet=11.8868
+      -> #3 (Tekrar 5, Seed=4199208457): Delay=18.55 ms | Rel=0.89985 | Bottleneck=183.00 Mbps | Maliyet=12.9786
+      -> #4 (Tekrar 2, Seed=4199205430): Delay=24.89 ms | Rel=0.86843 | Bottleneck=552.00 Mbps | Maliyet=16.4314
+      -> #5 (Tekrar 3, Seed=4199206439): Delay=27.55 ms | Rel=0.85981 | Bottleneck=193.00 Mbps | Maliyet=18.8820
+
+=== Deney 20: S=159, D=177, B=47.00 Mbps ===
+
+[Genetik Algoritma] [🏆 KAZANAN] Başarı: 5/5 | Avg Cost: 14.4693
+   Süre (sn) -> Ortalama: 2.9776, En iyi: 2.8764, En kötü: 3.0767
+   Maliyet -> Ortalama: 14.4693, Std: 3.0405, En iyi: 11.9082, En kötü: 19.6155
+   En iyi rota: [159, 169, 177]
+      -> #1 (Tekrar 2, Seed=2524894912): Delay=9.97 ms | Rel=0.86816 | Bottleneck=106.00 Mbps | Maliyet=11.9082
+      -> #2 (Tekrar 4, Seed=2524896930): Delay=12.78 ms | Rel=0.84328 | Bottleneck=384.00 Mbps | Maliyet=12.7613
+      -> #3 (Tekrar 3, Seed=2524895921): Delay=16.06 ms | Rel=0.85277 | Bottleneck=434.00 Mbps | Maliyet=13.4683
+      -> #4 (Tekrar 1, Seed=2524893903): Delay=13.43 ms | Rel=0.82714 | Bottleneck=181.00 Mbps | Maliyet=14.5930
+      -> #5 (Tekrar 5, Seed=2524897939): Delay=29.88 ms | Rel=0.84532 | Bottleneck=298.00 Mbps | Maliyet=19.6155
+
+[Q-Learning] Başarı: 5/5 | Avg Cost: 15.5707
+   Süre (sn) -> Ortalama: 0.2473, En iyi: 0.2371, En kötü: 0.2631
+   Maliyet -> Ortalama: 15.5707, Std: 1.1120, En iyi: 14.0757, En kötü: 16.8569
+   En iyi rota: [159, 234, 177]
+      -> #1 (Tekrar 2, Seed=2524898896): Delay=13.78 ms | Rel=0.81868 | Bottleneck=583.00 Mbps | Maliyet=14.0757
+      -> #2 (Tekrar 4, Seed=2524904898): Delay=19.81 ms | Rel=0.85061 | Bottleneck=634.00 Mbps | Maliyet=15.0216
+      -> #3 (Tekrar 1, Seed=2524895895): Delay=14.71 ms | Rel=0.79852 | Bottleneck=547.00 Mbps | Maliyet=15.4658
+      -> #4 (Tekrar 5, Seed=2524907899): Delay=22.59 ms | Rel=0.84690 | Bottleneck=377.00 Mbps | Maliyet=16.4335
+      -> #5 (Tekrar 3, Seed=2524901897): Delay=22.52 ms | Rel=0.83817 | Bottleneck=442.00 Mbps | Maliyet=16.8569
+
+[Karınca Kolonisi] Başarı: 5/5 | Avg Cost: 17.4472
+   Süre (sn) -> Ortalama: 1.5404, En iyi: 0.7164, En kötü: 2.8291
+   Maliyet -> Ortalama: 17.4472, Std: 2.9573, En iyi: 14.0492, En kötü: 20.8889
+   En iyi rota: [159, 35, 177]
+      -> #1 (Tekrar 3, Seed=2524898903): Delay=11.93 ms | Rel=0.81862 | Bottleneck=224.00 Mbps | Maliyet=14.0492
+      -> #2 (Tekrar 5, Seed=2524902909): Delay=13.17 ms | Rel=0.80476 | Bottleneck=277.00 Mbps | Maliyet=15.5253
+      -> #3 (Tekrar 2, Seed=2524896900): Delay=12.52 ms | Rel=0.76857 | Bottleneck=353.00 Mbps | Maliyet=16.6352
+      -> #4 (Tekrar 1, Seed=2524894897): Delay=18.36 ms | Rel=0.75471 | Bottleneck=249.00 Mbps | Maliyet=20.1376
+      -> #5 (Tekrar 4, Seed=2524900906): Delay=22.22 ms | Rel=0.76142 | Bottleneck=295.00 Mbps | Maliyet=20.8889
+
+=== Genel Başarı Özeti ===
+GA: 20/20 kombinasyonda en az bir geçerli rota bulundu.
+ACO: 20/20 kombinasyonda en az bir geçerli rota bulundu.
+QLEARNING: 20/20 kombinasyonda en az bir geçerli rota bulundu.
